@@ -11,10 +11,12 @@ const rl = readline.createInterface({
 });
 
 const question = (query) => new Promise((resolve) => rl.question(query, resolve));
+const isWindows = process.platform === 'win32';
 
 async function detectR() {
   try {
-    const rPath = execSync('which R', { encoding: 'utf8' }).trim();
+    const cmd = isWindows ? 'where R' : 'which R';
+    const rPath = execSync(cmd, { encoding: 'utf8' }).trim();
     if (rPath) {
       console.log(`✓ Found R at: ${rPath}`);
       const useDetected = await question('Use this R installation? [Y/n]: ');
@@ -50,10 +52,22 @@ async function checkPoetry() {
 async function installPoetry() {
   console.log('📦 Installing Poetry...');
   try {
-    execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
+    if (isWindows) {
+      // Windows-specific installation using PowerShell
+      execSync('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -', 
+        { shell: 'powershell.exe', stdio: 'inherit' });
+    } else {
+      execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
+    }
+    
     // Add Poetry to PATH for the current session
-    const homeDir = process.env.HOME || process.env.USERPROFILE;
-    process.env.PATH = `${homeDir}/.local/bin:${process.env.PATH}`;
+    if (isWindows) {
+      const appData = process.env.APPDATA || path.join(process.env.USERPROFILE, 'AppData', 'Roaming');
+      process.env.PATH = `${path.join(appData, 'Python', 'Scripts')};${process.env.PATH}`;
+    } else {
+      const homeDir = process.env.HOME || process.env.USERPROFILE;
+      process.env.PATH = `${homeDir}/.local/bin:${process.env.PATH}`;
+    }
     return true;
   } catch (error) {
     console.error('\n❌ Failed to install Poetry:', error.message);
@@ -63,11 +77,13 @@ async function installPoetry() {
 
 function checkPython() {
   // Try different Python commands that might exist
-  const pythonCommands = ['python3', 'python', 'py'];
+  const pythonCommands = isWindows ? ['py', 'python', 'python3'] : ['python3', 'python', 'py'];
   
   for (const cmd of pythonCommands) {
     try {
       execSync(`${cmd} --version`, { stdio: 'ignore' });
+      // Store the working Python command for later use
+      process.env.PYTHON_CMD = cmd;
       return true;
     } catch (error) {
       continue;
@@ -82,6 +98,9 @@ async function main() {
   // Check Python installation
   if (!checkPython()) {
     console.error('\n❌ Python is required but not found. Please install Python and try again.\n');
+    if (isWindows) {
+      console.log('You can install Python from: https://www.python.org/downloads/\n');
+    }
     process.exit(1);
   }
 
@@ -168,7 +187,12 @@ WORKING_DIRECTORY=${workingDir}`;
     console.log('Poetry not found. Installing...');
     if (!await installPoetry()) {
       console.error('\n❌ Failed to install Poetry. Please install manually:');
-      console.error('curl -sSL https://install.python-poetry.org | python3 -\n');
+      if (isWindows) {
+        console.error('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -');
+      } else {
+        console.error('curl -sSL https://install.python-poetry.org | python3 -');
+      }
+      console.error('\nOr visit: https://python-poetry.org/docs/#installation\n');
       process.exit(1);
     }
   }
@@ -179,7 +203,8 @@ WORKING_DIRECTORY=${workingDir}`;
     // Configure Poetry to create virtual environment in project directory
     execSync('cd apps/api/services && poetry config virtualenvs.in-project true', { stdio: 'inherit' });
     // Install dependencies
-    execSync('cd apps/api/services && poetry install', { stdio: 'inherit' });
+    const cdCmd = isWindows ? 'cd apps/api/services &&' : 'cd apps/api/services &&';
+    execSync(`${cdCmd} poetry install`, { stdio: 'inherit' });
   } catch (error) {
     console.error('\n❌ Failed to install Python dependencies:', error.message);
     process.exit(1);
