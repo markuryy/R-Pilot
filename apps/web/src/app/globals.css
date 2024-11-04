@@ -75,9 +75,10 @@
 
 @layer base {
   * {
-    @apply border-zinc-200;
+    @apply border-border;
   }
   body {
-    @apply bg-white text-zinc-900;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

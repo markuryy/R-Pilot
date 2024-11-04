@@ -2,6 +2,8 @@ import { Message } from "../communication/message";
 import { TbUser } from "react-icons/tb";
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function ChatHistory({
   history,
@@ -18,64 +20,73 @@ export default function ChatHistory({
   );
 
   return (
-    <div className="mt-auto">
-      {historyFiltered.map((msg, idx) => (
-        <div key={idx} className="flex mt-4">
-          {msg.role === "model" ? (
-            <div className="mr-4 mt-2 min-w-[36px] relative">
-              <img src="./icon.png" alt="robot" width={36} />
-              {thinking && idx === historyFiltered.length - 1 && (
-                <img
-                  src="./thinking.gif"
-                  alt="thinking"
-                  className="absolute block w-[30px] top-[-20px] right-[-30px] z-10"
-                />
+    <ScrollArea className="mt-auto">
+      <div className="pr-4">
+        {historyFiltered.map((msg, idx) => (
+          <div key={idx} className="flex mt-4">
+            {msg.role === "model" ? (
+              <div className="mr-4 mt-2 min-w-[36px] relative">
+                <Avatar>
+                  <AvatarImage src="./icon.png" alt="AI" />
+                  <AvatarFallback>AI</AvatarFallback>
+                </Avatar>
+                {thinking && idx === historyFiltered.length - 1 && (
+                  <img
+                    src="./thinking.gif"
+                    alt="thinking"
+                    className="absolute block w-[30px] top-[-20px] right-[-30px] z-10"
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 min-w-[20px]" />
+            )}
+            <div
+              className={
+                "drop-shadow-sm rounded-md p-4 " +
+                (msg.role === "user" ? "bg-blue-100" : "bg-card")
+              }
+            >
+              {msg.text === "" || msg.text === undefined ? (
+                "..."
+              ) : (
+                <div className="prose prose-sm max-w-none">
+                  <ReactMarkdown
+                    components={{
+                      code(props) {
+                        const {children, className, ...rest} = props;
+                        return (
+                          <code
+                            className={`text-foreground ${className || ''} ${
+                              !className?.includes('language-') ? 'bg-muted rounded px-1' : 'block bg-muted p-2 rounded'
+                            }`}
+                            {...rest}
+                          >
+                            {children}
+                          </code>
+                        );
+                      }
+                    }}
+                  >
+                    {msg.text}
+                  </ReactMarkdown>
+                </div>
               )}
             </div>
-          ) : (
-            <div className="flex-1 min-w-[20px]" />
-          )}
-          <div
-            className={
-              "drop-shadow-sm rounded-md p-4 " +
-              (msg.role === "user" ? "bg-blue-100" : "bg-white")
-            }
-          >
-            {msg.text === "" || msg.text === undefined ? (
-              "..."
-            ) : (
-              <div className="prose prose-sm max-w-none">
-                <ReactMarkdown
-                  components={{
-                    code(props) {
-                      const {children, className, ...rest} = props;
-                      return (
-                        <code
-                          className={`text-black ${className || ''} ${
-                            !className?.includes('language-') ? 'bg-gray-200 rounded px-1' : 'block bg-gray-100 p-2 rounded'
-                          }`}
-                          {...rest}
-                        >
-                          {children}
-                        </code>
-                      );
-                    }
-                  }}
-                >
-                  {msg.text}
-                </ReactMarkdown>
+            {msg.role === "user" ? (
+              <div className="ml-4 mt-2">
+                <Avatar>
+                  <AvatarFallback>
+                    <TbUser className="h-6 w-6" />
+                  </AvatarFallback>
+                </Avatar>
               </div>
+            ) : (
+              <div className="flex-1 min-w-[20px]" />
             )}
           </div>
-          {msg.role === "user" ? (
-            <div className="ml-4 mt-2">
-              <TbUser size={36} />
-            </div>
-          ) : (
-            <div className="flex-1 min-w-[20px]" />
-          )}
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </ScrollArea>
   );
 }

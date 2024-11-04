@@ -1,10 +1,14 @@
 import React from "react";
-import type { FC, ChangeEvent } from "react";
+import type { FC } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { Approver } from "./approver";
 import Running from "./running";
 import useScroller from "../../helper/scroller";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 declare global {
   namespace NodeJS {
@@ -43,60 +47,60 @@ const InterpreterIO: FC<InterpreterIOProps> = ({
   // Use provided language or default based on interpreter type
   const language = providedLanguage || (INTERPRETER_TYPE === "r" ? "r" : "python");
 
-  const handleAutoApproveChange = (e: ChangeEvent<HTMLInputElement>) => {
-    approver.setAutoApprove(e.target.checked);
-  };
-
   return (
     <div className="h-full flex flex-col">
-      <div className="text-xl mt-2 text-blue-400">{title}</div>
-      <div
-        className={`flex-1 ${
-          busy ? "bg-neutral-100" : "bg-neutral-50"
-        } overflow-auto h-0 mt-2 ${
-          askApprove ? "border-red-400" : "border-transparent"
-        } border-2`}
-        ref={scrollRef}
-      >
-        {busy ? (
-          <div className="m-2">
-            <Running />
-          </div>
-        ) : (
-          <SyntaxHighlighter
-            language={language}
-            style={docco}
-            className="!overflow-x-visible"
-          >
-            {content ?? ""}
-          </SyntaxHighlighter>
-        )}
-      </div>
+      <div className="text-xl mt-2 text-primary">{title}</div>
+      <Card className={`flex-1 mt-2 ${askApprove ? "border-destructive" : "border-transparent"} border-2`}>
+        <ScrollArea 
+          ref={scrollRef}
+          className={`h-[calc(100%-1rem)] ${busy ? "bg-muted" : "bg-muted/50"}`}
+        >
+          {busy ? (
+            <div className="m-2">
+              <Running />
+            </div>
+          ) : (
+            <SyntaxHighlighter
+              language={language}
+              style={docco}
+              className="!overflow-x-visible"
+            >
+              {content ?? ""}
+            </SyntaxHighlighter>
+          )}
+        </ScrollArea>
+      </Card>
       <div className="flex justify-end items-center my-2">
-        <div>
-          <input
-            className="align-middle accent-red-600"
-            type="checkbox"
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="auto-approve"
             checked={autoApprove}
-            onChange={handleAutoApproveChange}
+            onCheckedChange={(checked) => approver.setAutoApprove(checked as boolean)}
             disabled={disabled}
-          />{" "}
-          auto-approve
+          />
+          <label
+            htmlFor="auto-approve"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Auto-approve
+          </label>
         </div>
-        <button
-          className="ml-4 px-4 py-2 bg-blue-400 hover:bg-blue-500 disabled:bg-gray-100 text-white disabled:text-gray-300 rounded-md"
+        <Button
+          variant="secondary"
+          className="ml-4"
           onClick={() => approver.approve(false)}
           disabled={!askApprove || disabled}
         >
           Reject
-        </button>
-        <button
-          className="ml-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-100 text-white disabled:text-gray-300 rounded-md"
+        </Button>
+        <Button
+          variant="destructive"
+          className="ml-2"
           onClick={() => approver.approve(true)}
           disabled={!askApprove || disabled}
         >
           Approve
-        </button>
+        </Button>
       </div>
     </div>
   );
