@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Message } from "../communication/message";
 import { TbUser } from "react-icons/tb";
 import React, { useState } from "react";

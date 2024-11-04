@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
         'Cache-Control': 'no-cache',
       },
     });
-  } catch (error) {
+  } catch {
     return new Response('Error serving file', { status: 500 });
   }
 }

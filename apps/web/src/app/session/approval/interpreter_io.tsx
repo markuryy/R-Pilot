@@ -12,13 +12,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTheme } from "next-themes";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Download } from "lucide-react";
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      NEXT_PUBLIC_INTERPRETER_TYPE?: string;
-    }
-  }
-}
 
 // Get interpreter type from environment, defaulting to r
 const INTERPRETER_TYPE = process.env.NEXT_PUBLIC_INTERPRETER_TYPE?.toLowerCase() || "r";

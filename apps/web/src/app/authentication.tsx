@@ -31,10 +31,10 @@ export default function Authentication({
         .post(SERVICES_URL + "/api/auth/verify", {
           token,
         })
-        .then((response) => {
+        .then(() => {
           setToken(token);
         })
-        .catch((error) => {}); // will show error later
+        .catch(() => {}); // will show error later
     }
   }, []);
 

@@ -7,20 +7,20 @@ export default class LLM {
   ) {}
 
   private connect(): Promise<WebSocket> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const ws = new WebSocket(`${this.llmUrl}/chat`);
       ws.onopen = () => {
         ws.send(this.authToken);
         resolve(ws);
       };
       ws.onerror = () => {
-        reject(Error("Could not connect to LLM"));
+        throw new Error("Could not connect to LLM");
       };
     });
   }
 
   private waitClose(ws: WebSocket): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       ws.onclose = () => {
         resolve();
       };

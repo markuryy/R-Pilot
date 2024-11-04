@@ -24,7 +24,7 @@ export class Approver {
   };
 
   getApproval = () => {
-    return new Promise<boolean>((resolve, reject) => {
+    return new Promise<boolean>((resolve) => {
       if (this.autoApprove) {
         resolve(true);
       } else {

@@ -64,14 +64,14 @@ export default function ChatInput({
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         const newFile = {
           name: file.name,
           path: `/workspace/${file.name}`
         };
         setAttachedFiles(prev => [...prev, newFile]);
       }
-    } catch (error) {
+    } catch {
       // Handle error silently
     }
   };

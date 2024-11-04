@@ -17,7 +17,7 @@ class Throttler {
   };
 }
 
-export default function useScroller(state: any) {
+export default function useScroller(state: unknown) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const throttler = React.useRef<Throttler>(

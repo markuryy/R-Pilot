@@ -3,7 +3,7 @@ function getServicesUrl() {
   if (url === "") {
     try {
       url = location.origin;
-    } catch (e) {
+    } catch {
       // during page build, location is not available
       url = "http://localhost";
     }

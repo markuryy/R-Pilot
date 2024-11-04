@@ -55,13 +55,12 @@ export class ChatRound {
   run = async (message: string) => {
     let response = await this.sendMessage({ role: "user", text: message });
     let round = 0;
-    for (; round < 10; round++) {
-      const code = response.code;
-      if (code !== undefined) {
-        const approvedIn = await this.approveIn(code);
+    for (; round < 20; round++) {
+      if (response.code !== undefined) {
+        const approvedIn = await this.approveIn(response.code);
         let result = "ERROR: User did not approve code execution!";
         if (approvedIn) {
-          const resultCode = await this.executeCode(code);
+          const resultCode = await this.executeCode(response.code);
           const approvedOut = await this.approveOut(resultCode);
           if (approvedOut) {
             result = resultCode;
@@ -73,8 +72,8 @@ export class ChatRound {
         break;
       }
     }
-    if (round == 10) {
-      throw new Error("Stopped after 10 rounds");
+    if (round == 20) {
+      throw new Error("Stopped after 20 rounds");
     }
   };
 
