@@ -1,10 +1,13 @@
 import { Message } from "../communication/message";
 import { TbUser } from "react-icons/tb";
-import React from "react";
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sparkles } from "lucide-react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import remarkGfm from 'remark-gfm';
 
 export default function ChatHistory({
   history,
@@ -19,6 +22,25 @@ export default function ChatHistory({
       (msg.role === "model" &&
         (msg.text !== undefined || (thinking && idx == history.length - 1))),
   );
+
+  const CopyButton = ({ content, className = "" }: { content: string, className?: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+      navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1000);
+    };
+
+    return (
+      <button
+        onClick={handleCopy}
+        className={`absolute top-2 right-2 opacity-0 transition-opacity bg-muted/80 text-foreground px-2 py-1 rounded text-xs hover:bg-muted ${className}`}
+      >
+        {copied ? "Copied!" : "Copy"}
+      </button>
+    );
+  };
 
   return (
     <ScrollArea className="mt-auto">
@@ -45,15 +67,16 @@ export default function ChatHistory({
             )}
             <div
               className={
-                "drop-shadow-sm rounded-xl p-4 " +
+                "drop-shadow-sm rounded-xl p-4 relative group max-w-[calc(100%-6rem)] " +
                 (msg.role === "user" ? "bg-primary/10" : "bg-card border")
               }
             >
               {msg.text === "" || msg.text === undefined ? (
                 "..."
               ) : (
-                <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap [&>table]:border-collapse [&>table]:w-full [&>table>thead>tr>th]:border [&>table>thead>tr>th]:border-border [&>table>thead>tr>th]:p-2 [&>table>tbody>tr>td]:border [&>table>tbody>tr>td]:border-border [&>table>tbody>tr>td]:p-2">
+                <div className="prose prose-sm dark:prose-invert max-w-none [&>*]:my-0 [&>*+*]:mt-3">
                   <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
                     urlTransform={(url) => {
                       if (url.startsWith('sandbox:/workspace/')) {
                         const path = url.replace('sandbox:/workspace/', '');
@@ -62,15 +85,40 @@ export default function ChatHistory({
                       return url;
                     }}
                     components={{
-                      code(props) {
-                        const {children, className, ...rest} = props;
+                      code({ className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        
+                        if (match) {
+                          return (
+                            <div className="relative group/code" style={{ maxWidth: '100%' }}>
+                              <pre style={{ margin: 0, padding: 0 }}>
+                                <SyntaxHighlighter
+                                  language={match[1]}
+                                  style={vscDarkPlus}
+                                  customStyle={{
+                                    margin: 0,
+                                    padding: '0.5rem',
+                                    fontSize: '0.875rem',
+                                    lineHeight: '1.25',
+                                    whiteSpace: 'pre',
+                                    overflowX: 'auto',
+                                    width: '100%'
+                                  }}
+                                  wrapLongLines={false}
+                                  PreTag="div"
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              </pre>
+                              <CopyButton 
+                                content={String(children)} 
+                                className="group-hover/code:opacity-100"
+                              />
+                            </div>
+                          );
+                        }
                         return (
-                          <code
-                            className={`text-foreground ${className || ''} ${
-                              !className?.includes('language-') ? 'bg-muted rounded px-1' : 'block bg-muted p-2 rounded'
-                            }`}
-                            {...rest}
-                          >
+                          <code className="bg-muted rounded px-1" {...props}>
                             {children}
                           </code>
                         );
@@ -110,6 +158,12 @@ export default function ChatHistory({
                     {msg.text}
                   </ReactMarkdown>
                 </div>
+              )}
+              {msg.role === "model" && msg.text && (
+                <CopyButton 
+                  content={msg.text} 
+                  className="group-hover:opacity-100"
+                />
               )}
             </div>
             {msg.role === "user" ? (
