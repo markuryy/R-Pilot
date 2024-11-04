@@ -106,7 +106,7 @@ async function setupPoetry() {
   // Try to uninstall Poetry if it exists
   try {
     if (isWindows) {
-      execSync('(Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -UseBasicParsing).Content | py - --uninstall', 
+      execSync('(Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/install.python-poetry.org/refs/heads/main/install-poetry.py -UseBasicParsing).Content | py - --uninstall', 
         { shell: 'powershell.exe', stdio: 'inherit' });
     } else {
       execSync('curl -sSL https://install.python-poetry.org | python3 - --uninstall', { stdio: 'inherit' });
