@@ -7,37 +7,35 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file uploaded' },
-        { status: 400 }
-      );
+      return new Response('No file uploaded', { status: 400 });
     }
+
+    // Go up to root directory and use workspace folder
+    const rootDir = path.join(process.cwd(), '..', '..');
+    const workspacePath = path.join(rootDir, 'workspace');
+
+    // Ensure workspace directory exists
+    await mkdir(workspacePath, { recursive: true });
+
+    const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = path.join(workspacePath, safeFilename);
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Ensure workspace directory exists
-    const workspacePath = path.join(process.cwd(), 'public', 'workspace');
-    
-    // Use original filename, replacing invalid characters
-    const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filePath = path.join(workspacePath, safeFilename);
-
-    // Write the file
     await writeFile(filePath, buffer);
 
-    return NextResponse.json({ 
-      filename: safeFilename,
-      message: 'File uploaded successfully' 
+    return new Response(JSON.stringify({
+      success: true,
+      path: `/workspace/${file.name}`
+    }), {
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
-    
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Error uploading file' },
-      { status: 500 }
-    );
+    console.error('Error handling file upload:', error);
+    return new Response('Error uploading file', { status: 500 });
   }
 }
