@@ -4,25 +4,28 @@
 
 Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/silvanmelchior/IncognitoPilot).
 
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+- [Git](https://git-scm.com/) for cloning the repository
+- [Python 3](https://www.python.org/) (3.8 or higher)
+- [R](https://www.r-project.org/)
+  - Windows: Download from https://cran.r-project.org/bin/windows/base/
+  - Mac: `brew install r` or download from https://cran.r-project.org/bin/macosx/
+  - Linux: `sudo apt-get install r-base`
+- [Bun](https://bun.sh/)
+  - Linux & macOS:
+    ```bash
+    curl -fsSL https://bun.sh/install | bash
+    ```
+  - Windows:
+    ```bash
+    powershell -c "irm bun.sh/install.ps1 | iex"
+    ```
+
 ## Quick Start
 
-1. Install [R](https://www.r-project.org/)
-   - Windows: Download from https://cran.r-project.org/bin/windows/base/
-   - Mac: `brew install r` or download from https://cran.r-project.org/bin/macosx/
-   - Linux: `sudo apt-get install r-base`
-
-2. Install [Bun](https://bun.sh/)
-   
-   Linux & macOS:
-   ```bash
-   curl -fsSL https://bun.sh/install | bash
-   ```
-   Windows:
-   ```bash
-   powershell -c "irm bun.sh/install.ps1 | iex"
-   ```
-
-3. Clone and setup:
+1. Clone and setup:
    ```bash
    git clone https://github.com/markuryy/R-Pilot.git
    cd r-pilot
@@ -30,13 +33,13 @@ Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/
    bun run setup
    ```
 
-4. Start R-Pilot:
+2. Start R-Pilot:
    ```bash
    bun run dev
    ```
    Note: There's also a `start` script in package.json, but it currently doesn't work due to linting issues from rapid development. Stick with `dev` for now.
 
-5. Open the authentication link with the token shown in the terminal (starts with http://localhost:3000).
+3. Open the authentication link with the token shown in the terminal (starts with http://localhost:3000).
 
 ## Features
 

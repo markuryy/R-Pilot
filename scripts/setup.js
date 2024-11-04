@@ -38,8 +38,39 @@ async function detectR() {
   return customPath;
 }
 
+async function checkPoetry() {
+  try {
+    execSync('poetry --version', { stdio: 'ignore' });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function installPoetry() {
+  console.log('📦 Installing Poetry...');
+  try {
+    execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
+    // Add Poetry to PATH for the current session
+    const homeDir = process.env.HOME || process.env.USERPROFILE;
+    process.env.PATH = `${homeDir}/.local/bin:${process.env.PATH}`;
+    return true;
+  } catch (error) {
+    console.error('\n❌ Failed to install Poetry:', error.message);
+    return false;
+  }
+}
+
 async function main() {
   console.log('\n🚀 Setting up R-Pilot...\n');
+
+  // Check Python installation
+  try {
+    execSync('python3 --version', { stdio: 'ignore' });
+  } catch (error) {
+    console.error('\n❌ Python 3 is required but not found. Please install Python 3 and try again.\n');
+    process.exit(1);
+  }
 
   // Install bun dependencies
   console.log('📦 Installing bun dependencies...');
@@ -119,13 +150,25 @@ WORKING_DIRECTORY=${workingDir}`;
     console.log('✅ Created NextJS environment configuration\n');
   }
 
+  // Check and install Poetry if needed
+  if (!await checkPoetry()) {
+    console.log('Poetry not found. Installing...');
+    if (!await installPoetry()) {
+      console.error('\n❌ Failed to install Poetry. Please install manually:');
+      console.error('curl -sSL https://install.python-poetry.org | python3 -\n');
+      process.exit(1);
+    }
+  }
+
   // Install Python dependencies
   console.log('📦 Installing Python dependencies...');
   try {
+    // Configure Poetry to create virtual environment in project directory
+    execSync('cd apps/api/services && poetry config virtualenvs.in-project true', { stdio: 'inherit' });
+    // Install dependencies
     execSync('cd apps/api/services && poetry install', { stdio: 'inherit' });
   } catch (error) {
-    console.error('\n❌ Failed to install Python dependencies. Please install Poetry and try again:');
-    console.error('curl -sSL https://install.python-poetry.org | python3 -\n');
+    console.error('\n❌ Failed to install Python dependencies:', error.message);
     process.exit(1);
   }
 
