@@ -20,7 +20,13 @@ class RInterpreter:
         r_path: Path = None,
         timeout: int = None,
     ):
-        self._working_dir = working_dir
+        # Set working directory to the web public workspace directory
+        if working_dir is None:
+            root_dir = Path(__file__).parent.parent.parent.parent.parent.parent  # Up to project root
+            self._working_dir = root_dir / "apps" / "web" / "public" / "workspace"
+        else:
+            self._working_dir = working_dir
+            
         if r_path is None:
             # Default to system R installation
             self._r_path = Path("Rscript")
@@ -117,6 +123,8 @@ class RInterpreter:
     def _create_script(self, script: str) -> Path:
         # Wrap the script to capture and print the last value
         wrapped_script = f"""
+        # Suppress file connection warnings
+        options(warn = -1)
         .Last.value <- tryCatch({{
             {script}
         }}, error = function(e) {{

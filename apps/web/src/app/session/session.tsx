@@ -74,6 +74,7 @@ export default function Session({
       <div className="container flex-1 py-4 overflow-hidden flex flex-col min-h-0">
         <div className="grid flex-1 gap-4 grid-cols-2 min-h-0">
           <div className="flex flex-col min-h-0">
+            
             <ScrollArea className="flex-1 min-h-0" ref={scrollRef}>
               {history.length === 0 ? (
                 <Brand />

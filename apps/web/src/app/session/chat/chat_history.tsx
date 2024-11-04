@@ -74,6 +74,21 @@ export default function ChatHistory({
                             <table {...props} />
                           </div>
                         );
+                      },
+                      a(props) {
+                        const { href, children } = props;
+                        const isWorkspaceFile = href?.startsWith('/workspace/');
+                        return (
+                          <a
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={isWorkspaceFile}
+                            className="text-primary hover:text-primary/80"
+                          >
+                            {children}
+                          </a>
+                        );
                       }
                     }}
                   >
