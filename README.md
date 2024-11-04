@@ -8,7 +8,10 @@ Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/
 
 Before you begin, ensure you have the following installed:
 - [Git](https://git-scm.com/) for cloning the repository
-- [Python 3](https://www.python.org/) (3.8 or higher)
+- [Python](https://www.python.org/) (version 3.9-3.12)
+  - Windows: Download from https://www.python.org/downloads/
+  - Mac: `brew install python@3.12`
+  - Linux: `sudo apt-get install python3.12`
 - [R](https://www.r-project.org/)
   - Windows: Download from https://cran.r-project.org/bin/windows/base/
   - Mac: `brew install r` or download from https://cran.r-project.org/bin/macosx/
@@ -79,7 +82,13 @@ NEXT_PUBLIC_SERVICES_URL=http://localhost:8000  # Backend API URL
    - If R isn't found, reinstall from https://www.r-project.org/
    - If you must specify your own path, find it using `which R`
 
-3. Connection Failed
+3. Python Issues
+   - Make sure you have Python 3.9-3.12 installed (3.13+ not supported yet)
+   - Windows: Download from https://www.python.org/downloads/
+   - Mac: `brew install python@3.12`
+   - Linux: Check your package manager for Python 3.9-3.12
+
+4. Connection Failed
    - Check if backend is running (look for messages in terminal)
    - Make sure ports 3000 and 8000 are free
 

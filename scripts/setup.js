@@ -75,19 +75,47 @@ async function installPoetry() {
   }
 }
 
+function checkPythonVersion(cmd) {
+  try {
+    const version = execSync(`${cmd} -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"`, { encoding: 'utf8' }).trim();
+    const [major, minor] = version.split('.').map(Number);
+    
+    // Check if version is between 3.9 and 3.12
+    if (major === 3 && minor >= 9 && minor <= 12) {
+      return true;
+    }
+    console.error(`\n❌ Python version ${version} is not supported.`);
+    console.error('Please install Python version 3.9-3.12');
+    if (isWindows) {
+      console.error('Download from: https://www.python.org/downloads/');
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+}
+
 function checkPython() {
   // Try different Python commands that might exist
-  const pythonCommands = isWindows ? ['py', 'python', 'python3'] : ['python3', 'python', 'py'];
+  const pythonCommands = isWindows ? ['py -3', 'python', 'python3'] : ['python3', 'python', 'py'];
   
   for (const cmd of pythonCommands) {
     try {
       execSync(`${cmd} --version`, { stdio: 'ignore' });
-      // Store the working Python command for later use
-      process.env.PYTHON_CMD = cmd;
-      return true;
+      if (checkPythonVersion(cmd)) {
+        // Store the working Python command for later use
+        process.env.PYTHON_CMD = cmd;
+        return true;
+      }
     } catch (error) {
       continue;
     }
+  }
+  
+  console.error('\n❌ Compatible Python version not found.');
+  console.error('Please install Python version 3.9-3.12');
+  if (isWindows) {
+    console.error('Download from: https://www.python.org/downloads/\n');
   }
   return false;
 }
@@ -97,10 +125,6 @@ async function main() {
 
   // Check Python installation
   if (!checkPython()) {
-    console.error('\n❌ Python is required but not found. Please install Python and try again.\n');
-    if (isWindows) {
-      console.log('You can install Python from: https://www.python.org/downloads/\n');
-    }
     process.exit(1);
   }
 
