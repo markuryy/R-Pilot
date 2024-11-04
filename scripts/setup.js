@@ -102,37 +102,70 @@ function checkPython() {
 
 async function setupPoetry() {
   console.log('📦 Setting up Poetry...');
-  
-  // Try to uninstall Poetry if it exists
+
+  // Get poetry installation path
+  const poetryPath = isWindows
+    ? path.join(process.env.APPDATA || path.join(process.env.USERPROFILE, 'AppData', 'Roaming'), 'Python', 'Scripts', 'poetry.exe')
+    : path.join(process.env.HOME || process.env.USERPROFILE, '.local', 'bin', 'poetry');
+
+  // Check if poetry is already installed
   try {
-    if (isWindows) {
-      execSync('(Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/install.python-poetry.org/refs/heads/main/install-poetry.py -UseBasicParsing).Content | py - --uninstall', 
-        { shell: 'powershell.exe', stdio: 'inherit' });
-    } else {
-      execSync('curl -sSL https://install.python-poetry.org | python3 - --uninstall', { stdio: 'inherit' });
-    }
+    execSync('poetry --version', { stdio: 'ignore' });
+    console.log('✓ Poetry is already installed');
+    return true;
   } catch (error) {
-    // Ignore uninstall errors
+    console.log('Installing Poetry...');
   }
 
-  // Install Poetry
   try {
+    // Install Poetry using the official installer
     if (isWindows) {
+      // Download and run the Windows installer
       execSync('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -', 
         { shell: 'powershell.exe', stdio: 'inherit' });
+      
+      // Add Poetry to the user's PATH in Windows registry
+      const poetryDir = path.dirname(poetryPath);
+      execSync(`setx PATH "%PATH%;${poetryDir}"`, { stdio: 'inherit' });
+      
+      // Also add to current session
+      process.env.PATH = `${poetryDir};${process.env.PATH}`;
     } else {
+      // Install Poetry on Unix systems
       execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
+      
+      // Add Poetry to PATH in shell config
+      const homeDir = process.env.HOME;
+      const shellConfigFile = path.join(homeDir, process.env.SHELL.includes('zsh') ? '.zshrc' : '.bashrc');
+      const exportPath = `\n# Poetry\nexport PATH="$HOME/.local/bin:$PATH"\n`;
+      
+      if (fs.existsSync(shellConfigFile)) {
+        const currentContent = fs.readFileSync(shellConfigFile, 'utf8');
+        if (!currentContent.includes('$HOME/.local/bin')) {
+          fs.appendFileSync(shellConfigFile, exportPath);
+        }
+      } else {
+        fs.writeFileSync(shellConfigFile, exportPath);
+      }
+      
+      // Add to current session
+      process.env.PATH = `${path.dirname(poetryPath)}:${process.env.PATH}`;
     }
-    
-    // Add Poetry to PATH for the current session
-    if (isWindows) {
-      const appData = process.env.APPDATA || path.join(process.env.USERPROFILE, 'AppData', 'Roaming');
-      process.env.PATH = `${path.join(appData, 'Python', 'Scripts')};${process.env.PATH}`;
-    } else {
-      const homeDir = process.env.HOME || process.env.USERPROFILE;
-      process.env.PATH = `${homeDir}/.local/bin:${process.env.PATH}`;
+
+    // Verify installation
+    try {
+      execSync('poetry --version', { stdio: 'inherit' });
+      console.log('✓ Poetry installed successfully');
+      
+      // Configure poetry to create virtual environments in the project directory
+      execSync('poetry config virtualenvs.in-project true', { stdio: 'inherit' });
+      
+      return true;
+    } catch (error) {
+      console.error('\n❌ Poetry installation succeeded but command not found.');
+      console.error('Please restart your terminal and run setup again.\n');
+      return false;
     }
-    return true;
   } catch (error) {
     console.error('\n❌ Failed to install Poetry:', error.message);
     return false;
@@ -227,8 +260,7 @@ WORKING_DIRECTORY=${workingDir}`;
 
   // Setup Poetry and install dependencies
   if (!await setupPoetry()) {
-    console.error('\n❌ Failed to setup Poetry. Please install manually:');
-    console.error('Visit: https://python-poetry.org/docs/#installation\n');
+    console.error('\n❌ Failed to setup Poetry. Please restart your terminal and run setup again.\n');
     process.exit(1);
   }
 
@@ -250,6 +282,7 @@ WORKING_DIRECTORY=${workingDir}`;
   console.log('1. Start the development servers:');
   console.log('   bun run dev\n');
   console.log('2. Look for the authentication URL in the terminal\n');
+  console.log('NOTE: If poetry command is not found, please restart your terminal to apply PATH changes.\n');
 
   rl.close();
 }
