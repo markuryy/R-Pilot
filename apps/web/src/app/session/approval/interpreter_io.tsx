@@ -1,7 +1,7 @@
 import React from "react";
 import type { FC } from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { vs, vs2015 } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { Approver } from "./approver";
 import Running from "./running";
 import useScroller from "../../helper/scroller";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTheme } from "next-themes";
 
 declare global {
   namespace NodeJS {
@@ -43,31 +44,42 @@ const InterpreterIO: FC<InterpreterIOProps> = ({
   language: providedLanguage,  // Allow override but use interpreter-specific default
 }) => {
   const scrollRef = useScroller(content);
+  const { theme, systemTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Use provided language or default based on interpreter type
   const language = providedLanguage || (INTERPRETER_TYPE === "r" ? "r" : "python");
 
+  // Get the current theme, accounting for system preference
+  const currentTheme = mounted ? (theme === 'system' ? systemTheme : theme) : 'light';
+
   return (
     <div className="h-full flex flex-col">
       <div className="text-xl mt-2 text-primary">{title}</div>
-      <Card className={`flex-1 mt-2 ${askApprove ? "border-destructive" : "border-transparent"} border-2`}>
+      <Card className={`flex-1 mt-2 rounded-xl overflow-hidden ${askApprove ? "bg-destructive/5" : ""}`}>
         <ScrollArea 
           ref={scrollRef}
-          className={`h-[calc(100%-1rem)] ${busy ? "bg-muted" : "bg-muted/50"}`}
+          className="h-full"
         >
-          {busy ? (
-            <div className="m-2">
-              <Running />
-            </div>
-          ) : (
-            <SyntaxHighlighter
-              language={language}
-              style={docco}
-              className="!overflow-x-visible"
-            >
-              {content ?? ""}
-            </SyntaxHighlighter>
-          )}
+          <div className={`${busy ? "bg-muted" : "bg-muted/50"} min-h-full`}>
+            {busy ? (
+              <div className="m-2">
+                <Running />
+              </div>
+            ) : (
+              <SyntaxHighlighter
+                language={language}
+                style={currentTheme === 'dark' ? vs2015 : vs}
+                className="!bg-transparent !overflow-x-visible"
+              >
+                {content ?? ""}
+              </SyntaxHighlighter>
+            )}
+          </div>
         </ScrollArea>
       </Card>
       <div className="flex justify-end items-center my-2">
