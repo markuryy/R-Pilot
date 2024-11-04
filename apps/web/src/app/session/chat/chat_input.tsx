@@ -101,7 +101,7 @@ export default function ChatInput({
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-
+    
     const file = e.dataTransfer.files[0];
     if (file) {
       await validateAndUploadFile(file);
@@ -113,7 +113,7 @@ export default function ChatInput({
   };
 
   return (
-    <Card
+    <Card 
       className={`p-4 rounded-xl ${isDragging ? 'border-primary border-2' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

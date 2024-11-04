@@ -21,13 +21,13 @@ export default function RootLayout({
           :root {
             color-scheme: light;
           }
-
+          
           @media (prefers-color-scheme: dark) {
             :root {
               color-scheme: dark;
             }
           }
-
+          
           /* Prevent theme flash */
           html {
             visibility: visible;

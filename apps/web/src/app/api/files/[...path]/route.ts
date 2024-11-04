@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
 
     const file = await readFile(filePath);
     const ext = path.extname(filePath).toLowerCase();
-
+    
     const contentType = {
       '.png': 'image/png',
       '.jpg': 'image/jpeg',

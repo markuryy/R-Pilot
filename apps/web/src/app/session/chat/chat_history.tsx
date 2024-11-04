@@ -97,7 +97,7 @@ export default function ChatHistory({
                       img({ src = '', alt }) {
                         return (
                           <img
-                            src={src.startsWith('sandbox:/workspace/')
+                            src={src.startsWith('sandbox:/workspace/') 
                               ? `/api/files/${src.replace('sandbox:/workspace/', '')}`
                               : src}
                             alt={alt}
