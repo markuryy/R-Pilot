@@ -21,6 +21,7 @@ export default function ChatInput({
 }) {
   const [message, setMessage] = React.useState<string>("");
   const [attachedFiles, setAttachedFiles] = React.useState<AttachedFile[]>([]);
+  const [isDragging, setIsDragging] = React.useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canSend = !disabled && (message.length > 0 || attachedFiles.length > 0);
@@ -29,17 +30,16 @@ export default function ChatInput({
     const el = innerRef.current;
     if (el !== null) {
       el.style.height = "0";
-      el.style.height = Math.min(el.scrollHeight, 24 * 4) + "px";
+      const maxHeight = 24 * 4;
+      el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+      el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
     }
   };
 
   const onSend = () => {
     if (canSend) {
-      const fullMessage = [
-        message,
-        ...attachedFiles.map(file => `[${file.name}](${file.path})`)
-      ].filter(Boolean).join("\n");
-      
+      const fileLinks = attachedFiles.map(file => `[${file.name}](${file.path})`);
+      const fullMessage = [message, ...fileLinks].filter(Boolean).join("\n");
       onMessage(fullMessage);
       setMessage("");
       setAttachedFiles([]);
@@ -48,9 +48,11 @@ export default function ChatInput({
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const validateAndUploadFile = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      alert('Only CSV files are allowed');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -63,20 +65,46 @@ export default function ChatInput({
 
       if (response.ok) {
         const data = await response.json();
-        setAttachedFiles(prev => [...prev, {
+        const newFile = {
           name: file.name,
           path: `/workspace/${file.name}`
-        }]);
-      } else {
-        console.error('Upload failed');
+        };
+        setAttachedFiles(prev => [...prev, newFile]);
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      // Handle error silently
     }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    await validateAndUploadFile(file);
 
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      await validateAndUploadFile(file);
     }
   };
 
@@ -85,7 +113,12 @@ export default function ChatInput({
   };
 
   return (
-    <Card className="p-4 rounded-xl">
+    <Card
+      className={`p-4 rounded-xl ${isDragging ? 'border-primary border-2' : ''}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {attachedFiles.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
           {attachedFiles.map((file, index) => (
@@ -110,6 +143,7 @@ export default function ChatInput({
           ref={fileInputRef}
           onChange={handleFileUpload}
           className="hidden"
+          accept=".csv"
           disabled={disabled}
         />
         <Button

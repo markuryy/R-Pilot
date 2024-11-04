@@ -34,7 +34,7 @@ export default function ChatHistory({
                 </Avatar>
                 {thinking && idx === historyFiltered.length - 1 && (
                   <img
-                    src="./thinking.gif"
+                    src="/thinking.gif"
                     alt="thinking"
                     className="absolute block w-[30px] top-[-20px] right-[-30px] z-10"
                   />
@@ -54,6 +54,13 @@ export default function ChatHistory({
               ) : (
                 <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap [&>table]:border-collapse [&>table]:w-full [&>table>thead>tr>th]:border [&>table>thead>tr>th]:border-border [&>table>thead>tr>th]:p-2 [&>table>tbody>tr>td]:border [&>table>tbody>tr>td]:border-border [&>table>tbody>tr>td]:p-2">
                   <ReactMarkdown
+                    urlTransform={(url) => {
+                      if (url.startsWith('sandbox:/workspace/')) {
+                        const path = url.replace('sandbox:/workspace/', '');
+                        return `/api/files/${path}`;
+                      }
+                      return url;
+                    }}
                     components={{
                       code(props) {
                         const {children, className, ...rest} = props;
@@ -75,19 +82,27 @@ export default function ChatHistory({
                           </div>
                         );
                       },
-                      a(props) {
-                        const { href, children } = props;
-                        const isWorkspaceFile = href?.startsWith('/workspace/');
+                      a({ href, children }) {
                         return (
                           <a
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
-                            download={isWorkspaceFile}
-                            className="text-primary hover:text-primary/80"
+                            className="text-primary hover:text-primary/80 underline"
                           >
                             {children}
                           </a>
+                        );
+                      },
+                      img({ src = '', alt }) {
+                        return (
+                          <img
+                            src={src.startsWith('sandbox:/workspace/')
+                              ? `/api/files/${src.replace('sandbox:/workspace/', '')}`
+                              : src}
+                            alt={alt}
+                            className="max-w-full h-auto"
+                          />
                         );
                       }
                     }}
