@@ -2,22 +2,19 @@
   "name": "r-pilot",
   "private": true,
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "setup": "node scripts/setup.js"
   },
   "devDependencies": {
-    "prettier": "^3.2.5",
-    "turbo": "^2.2.3",
-    "typescript": "5.5.4"
+    "prettier": "^3.1.0",
+    "turbo": "latest"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "bun@1.1.6",
+  "packageManager": "bun@1.0.14",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/web",
+    "apps/api"
   ]
 }

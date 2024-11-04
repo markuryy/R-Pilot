@@ -1,26 +1,46 @@
 {
   "name": "web",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "19.0.0-rc-02c0e824-20241028",
-    "react-dom": "19.0.0-rc-02c0e824-20241028",
-    "next": "15.0.2"
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "geist": "^1.2.0",
+    "lucide-react": "^0.294.0",
+    "next": "14.2.16",
+    "next-themes": "^0.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.1.0",
+    "tailwindcss-animate": "^1.0.7",
+    "@tailwindcss/typography": "^0.5.15",
+    "axios": "^1.4.0",
+    "openai": "^3.3.0",
+    "react-icons": "^4.10.1",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "shadcn-ui": "^0.9.2"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.2"
+    "@types/node": "^20.10.3",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "@types/react-syntax-highlighter": "^15.5.7",
+    "autoprefixer": "^10.4.16",
+    "css-loader": "^6.8.1",
+    "style-loader": "^3.3.3",
+    "eslint": "8.45.0",
+    "eslint-config-next": "13.4.10",
+    "postcss": "^8.4.32",
+    "postcss-nesting": "^12.0.1",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.2"
   }
 }

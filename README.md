@@ -1,81 +1,79 @@
-# Turborepo starter
+# R-Pilot
 
-This is an official starter Turborepo.
+Your AI-powered R programming assistant.
 
-## Using this example
+## Quick Start
 
-Run the following command:
+1. Install [R](https://www.r-project.org/)
+   - Windows: Download from https://cran.r-project.org/bin/windows/base/
+   - Mac: `brew install r` or download from https://cran.r-project.org/bin/macosx/
+   - Linux: `sudo apt-get install r-base`
 
-```sh
-npx create-turbo@latest
+2. Install [Bun](https://bun.sh/)
+   ```bash
+   curl -fsSL https://bun.sh/install | bash
+   ```
+
+3. Clone and setup:
+   ```bash
+   git clone https://github.com/markuryy/R-Pilot.git
+   cd r-pilot
+   bun install
+   bun run setup
+   ```
+
+4. Start R-Pilot:
+   ```bash
+   bun run dev
+   ```
+
+5. Open the authentication link with the token shown in the terminal (starts with http://localhost:3000).
+
+## Features
+
+- AI-powered R programming assistance
+- Interactive R code execution
+- Real-time output and plotting
+- Secure sandboxed environment
+
+## Environment Configuration
+
+The .env file contains these important settings:
+
+```bash
+# Required
+OPENAI_API_KEY=           # Your OpenAI API key
+
+# Optional (defaults shown)
+INTERPRETER_TYPE=r        # Use R interpreter
+INTERPRETER_TIMEOUT=120   # Timeout in seconds
+ALLOWED_HOSTS=localhost:3000
 ```
 
-## What's inside?
+The NextJS app uses a .env.local file (automatically created during setup) with these variables:
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000    # Backend API URL
+NEXT_PUBLIC_WS_URL=ws://localhost:8000       # WebSocket URL
+NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
 ```
 
-### Develop
+## Need Help?
 
-To develop all apps and packages, run the following command:
+- Check [Common Issues](#common-issues) below
+- See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed setup
+- Visit our [GitHub Issues](https://github.com/your-repo/issues)
 
-```
-cd my-turborepo
-pnpm dev
-```
+## Common Issues
 
-### Remote Caching
+1. Token Not Appearing
+   - Check terminal output
+   - Verify ALLOWED_HOSTS in .env
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+2. R Issues
+   - Make sure R is installed: Run `R --version` in terminal
+   - If R isn't found, reinstall from https://www.r-project.org/
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+3. Connection Failed
+   - Check if backend is running (look for messages in terminal)
+   - Make sure ports 3000 and 8000 are free

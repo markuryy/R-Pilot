@@ -1,0 +1,10 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd services && PYTHONPATH=$PYTHONPATH:. poetry run uvicorn main:app --reload",
+    "start": "cd services && PYTHONPATH=$PYTHONPATH:. poetry run uvicorn main:app",
+    "test": "cd services && poetry run pytest"
+  }
+}

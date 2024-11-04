@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - INTERPRETER_TYPE=r
+      - WORKING_DIRECTORY=/opt/app/workspace
+      - INTERPRETER_TIMEOUT=120
+    volumes:
+      - ./workspace:/opt/app/workspace

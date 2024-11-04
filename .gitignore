@@ -36,3 +36,13 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+venv
+apps/api/services/__pycache__
+apps/api/services/services/interpreter/__pycache__
+apps/api/services/services/auth/__pycache__
+apps/api/services/services/llm/__pycache__
+apps/api/services/services/llm/gpt/__pycache__
+apps/api/services/services/llm/llama/__pycache__
+apps/api/services/services/utils/__pycache__
+apps/api/services/services/__pycache__
+.reference/shadcnui
