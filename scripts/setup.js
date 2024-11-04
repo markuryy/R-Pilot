@@ -78,9 +78,8 @@ ENABLE_CORS=TRUE
 ALLOWED_HOSTS=localhost:3000
 R_PATH=${rPath}
 
-# Frontend URLs
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_WS_URL=ws://localhost:8000
+# Frontend Environment
+NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
 
 # Working Directory
 WORKING_DIRECTORY=${workingDir}`;
