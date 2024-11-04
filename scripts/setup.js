@@ -239,11 +239,29 @@ WORKING_DIRECTORY=${workingDir}`;
   // Install Python dependencies
   console.log('📦 Installing Python dependencies...');
   try {
-    // Configure Poetry to create virtual environment in project directory
-    execSync(`cd apps/api/services && poetry config virtualenvs.in-project true && poetry env use "${process.env.PYTHON_PATH}"`, { stdio: 'inherit' });
+    const pythonPath = process.env.PYTHON_PATH.replace(/\\/g, '/');
+    const servicesDir = path.join(process.cwd(), 'apps', 'api', 'services');
+    
+    // Set Poetry to use project virtualenvs
+    execSync('poetry config virtualenvs.in-project true', { 
+      stdio: 'inherit',
+      cwd: servicesDir,
+      env: { ...process.env, POETRY_PYTHON: pythonPath }
+    });
+
+    // Create new virtual environment with specific Python version
+    execSync(`poetry env remove --all && poetry env use "${pythonPath}"`, {
+      stdio: 'inherit',
+      cwd: servicesDir,
+      env: { ...process.env, POETRY_PYTHON: pythonPath }
+    });
+
     // Install dependencies
-    const cdCmd = isWindows ? 'cd apps/api/services &&' : 'cd apps/api/services &&';
-    execSync(`${cdCmd} poetry install`, { stdio: 'inherit' });
+    execSync('poetry install', {
+      stdio: 'inherit',
+      cwd: servicesDir,
+      env: { ...process.env, POETRY_PYTHON: pythonPath }
+    });
   } catch (error) {
     console.error('\n❌ Failed to install Python dependencies:', error.message);
     process.exit(1);
