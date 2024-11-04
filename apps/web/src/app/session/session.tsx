@@ -105,6 +105,7 @@ export default function Session({
                 disabled={error !== null}
                 busy={false}
                 language="r"
+                history={history}
               />
             </div>
             <div className="flex-1 min-h-0">
