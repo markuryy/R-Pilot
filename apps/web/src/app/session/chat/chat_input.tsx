@@ -2,6 +2,7 @@ import React from "react";
 import { BiSend } from "react-icons/bi";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function ChatInput({
   innerRef,
@@ -34,8 +35,8 @@ export default function ChatInput({
   };
 
   return (
-    <div>
-      <div className="flex gap-2 bg-white drop-shadow-sm border border-input rounded-md p-4 focus-within:border-ring">
+    <Card className="p-4 rounded-xl">
+      <div className="flex gap-2">
         <div className="flex-1">
           <Textarea
             ref={innerRef}
@@ -45,11 +46,14 @@ export default function ChatInput({
               adjustSize();
             }}
             onKeyDown={(event) => {
-              if (event.key === "Enter") onSend();
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                onSend();
+              }
             }}
             disabled={disabled}
             placeholder={disabled ? "Please wait..." : "Type your message"}
-            className="min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden border-0 p-0 shadow-none"
+            className="min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden border-0 p-0 shadow-none bg-transparent"
             rows={1}
           />
         </div>
@@ -63,6 +67,6 @@ export default function ChatInput({
           <BiSend className={canSend ? "text-foreground" : "text-muted-foreground"} />
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }
