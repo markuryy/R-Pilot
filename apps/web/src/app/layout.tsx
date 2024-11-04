@@ -1,8 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
+import { GeistSans } from "geist/font/sans";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "R-Pilot",
@@ -15,9 +14,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <main className="h-screen">{children}</main>
+    <html lang="en" suppressHydrationWarning>
+      <body className={GeistSans.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <main className="h-screen bg-background text-foreground">
+            {children}
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );

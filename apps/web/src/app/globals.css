@@ -24,6 +24,8 @@
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --radius: 0.75rem;
+    --scrollbar-color: rgba(23, 37, 84, 0.2);
+    --scrollbar-color-hover: rgba(23, 37, 84, 0.3);
   }
  
   .dark {
@@ -46,12 +48,9 @@
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
+    --scrollbar-color: rgba(255, 255, 255, 0.1);
+    --scrollbar-color-hover: rgba(255, 255, 255, 0.2);
   }
-}
-
-:root {
-  --scrollbar-color: rgba(23, 37, 84, 0.2);
-  --scrollbar-color-hover: rgba(23, 37, 84, 0.3);
 }
 
 * {
