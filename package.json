@@ -6,7 +6,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "setup": "node scripts/setup.js"
+    "setup": "node scripts/setup.js",
+    "start": "bun run build && turbo run start"
   },
   "devDependencies": {
     "prettier": "^3.1.0",

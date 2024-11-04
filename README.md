@@ -28,6 +28,7 @@ Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/
    ```bash
    bun run dev
    ```
+   Note: There's also a `start` script in package.json, but it currently doesn't work due to linting issues from rapid development. Stick with `dev` for now.
 
 5. Open the authentication link with the token shown in the terminal (starts with http://localhost:3000).
 
@@ -75,4 +76,4 @@ NEXT_PUBLIC_SERVICES_URL=http://localhost:8000  # Backend API URL
 
 ## Deployment
 
-This project was never meant for public deployment, so certain features like filesystem interactions will not be available in production on Vercel, for example. You may be able to containerize the whole stack and serve the frontend with nginx; open a pull request if you want to give it a try. The included [IncognitoPilot](https://github.com/silvanmelchior/IncognitoPilot) Docker files have not been tested with the current Turborepo configuration.
+This project was never meant for public deployment, so certain features like filesystem interactions will not be available in production on Vercel, for example. You may be able to containerize the whole stack and serve the frontend with nginx; open a pull request if you want to give it a try.
