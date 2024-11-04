@@ -1,6 +1,6 @@
 # R-Pilot
 
-Your AI-powered R programming assistant.
+Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/silvanmelchior/IncognitoPilot).
 
 ## Quick Start
 
