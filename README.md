@@ -1,5 +1,7 @@
 # R-Pilot
 
+![](assets/images/r-pilot_demo.gif)
+
 Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/silvanmelchior/IncognitoPilot).
 
 ## Quick Start
@@ -34,7 +36,7 @@ Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/
 - AI-powered R programming assistance
 - Interactive R code execution
 - Real-time output and plotting
-- Secure sandboxed environment
+- Sandboxed environment for sharing files
 
 ## Environment Configuration
 
@@ -42,27 +44,19 @@ The .env file contains these important settings:
 
 ```bash
 # Required
-OPENAI_API_KEY=           # Your OpenAI API key
+OPENAI_API_KEY=               # Your OpenAI API key
 
 # Optional (defaults shown)
-INTERPRETER_TYPE=r        # Use R interpreter
-INTERPRETER_TIMEOUT=120   # Timeout in seconds
+INTERPRETER_TYPE=r            # Use R interpreter
+INTERPRETER_TIMEOUT=3600      # Timeout in seconds
 ALLOWED_HOSTS=localhost:3000
 ```
 
-The NextJS app uses a .env.local file (automatically created during setup) with these variables:
+The NextJS app uses a .env.local file (automatically created during setup):
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000    # Backend API URL
-NEXT_PUBLIC_WS_URL=ws://localhost:8000       # WebSocket URL
-NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
+NEXT_PUBLIC_SERVICES_URL=http://localhost:8000  # Backend API URL
 ```
-
-## Need Help?
-
-- Check [Common Issues](#common-issues) below
-- See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed setup
-- Visit our [GitHub Issues](https://github.com/your-repo/issues)
 
 ## Common Issues
 
@@ -73,7 +67,12 @@ NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
 2. R Issues
    - Make sure R is installed: Run `R --version` in terminal
    - If R isn't found, reinstall from https://www.r-project.org/
+   - If you must specify your own path, find it using `which R`
 
 3. Connection Failed
    - Check if backend is running (look for messages in terminal)
    - Make sure ports 3000 and 8000 are free
+
+## Deployment
+
+This project was never meant for public deployment, so certain features like filesystem interactions will not be available in production on Vercel, for example. You may be able to containerize the whole stack and serve the frontend with nginx; open a pull request if you want to give it a try. The included [IncognitoPilot](https://github.com/silvanmelchior/IncognitoPilot) Docker files have not been tested with the current Turborepo configuration.
