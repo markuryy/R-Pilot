@@ -75,6 +75,18 @@ async function installPoetry() {
   }
 }
 
+function getPythonPath(cmd) {
+  try {
+    if (isWindows) {
+      return execSync(`${cmd} -c "import sys; print(sys.executable)"`, { encoding: 'utf8' }).trim();
+    } else {
+      return execSync(`which ${cmd}`, { encoding: 'utf8' }).trim();
+    }
+  } catch (error) {
+    return null;
+  }
+}
+
 function checkPythonVersion(cmd) {
   try {
     const version = execSync(`${cmd} -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"`, { encoding: 'utf8' }).trim();
@@ -82,28 +94,31 @@ function checkPythonVersion(cmd) {
     
     // Check if version is between 3.9 and 3.12
     if (major === 3 && minor >= 9 && minor <= 12) {
-      return true;
+      return { version, path: getPythonPath(cmd) };
     }
     console.error(`\n❌ Python version ${version} is not supported.`);
     console.error('Please install Python version 3.9-3.12');
     if (isWindows) {
       console.error('Download from: https://www.python.org/downloads/');
     }
-    return false;
+    return null;
   } catch (error) {
-    return false;
+    return null;
   }
 }
 
 function checkPython() {
   // Try different Python commands that might exist
-  const pythonCommands = isWindows ? ['py -3', 'python', 'python3'] : ['python3', 'python', 'py'];
+  const pythonCommands = isWindows ? ['python', 'py -3', 'python3'] : ['python3', 'python', 'py'];
   
   for (const cmd of pythonCommands) {
     try {
       execSync(`${cmd} --version`, { stdio: 'ignore' });
-      if (checkPythonVersion(cmd)) {
-        // Store the working Python command for later use
+      const result = checkPythonVersion(cmd);
+      if (result) {
+        console.log(`✓ Found Python ${result.version} at: ${result.path}`);
+        // Store the working Python path for later use
+        process.env.PYTHON_PATH = result.path;
         process.env.PYTHON_CMD = cmd;
         return true;
       }
@@ -225,7 +240,7 @@ WORKING_DIRECTORY=${workingDir}`;
   console.log('📦 Installing Python dependencies...');
   try {
     // Configure Poetry to create virtual environment in project directory
-    execSync('cd apps/api/services && poetry config virtualenvs.in-project true', { stdio: 'inherit' });
+    execSync(`cd apps/api/services && poetry config virtualenvs.in-project true && poetry env use "${process.env.PYTHON_PATH}"`, { stdio: 'inherit' });
     // Install dependencies
     const cdCmd = isWindows ? 'cd apps/api/services &&' : 'cd apps/api/services &&';
     execSync(`${cdCmd} poetry install`, { stdio: 'inherit' });
