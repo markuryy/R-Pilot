@@ -40,41 +40,6 @@ async function detectR() {
   return customPath;
 }
 
-async function checkPoetry() {
-  try {
-    execSync('poetry --version', { stdio: 'ignore' });
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function installPoetry() {
-  console.log('📦 Installing Poetry...');
-  try {
-    if (isWindows) {
-      // Windows-specific installation using PowerShell
-      execSync('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -', 
-        { shell: 'powershell.exe', stdio: 'inherit' });
-    } else {
-      execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
-    }
-    
-    // Add Poetry to PATH for the current session
-    if (isWindows) {
-      const appData = process.env.APPDATA || path.join(process.env.USERPROFILE, 'AppData', 'Roaming');
-      process.env.PATH = `${path.join(appData, 'Python', 'Scripts')};${process.env.PATH}`;
-    } else {
-      const homeDir = process.env.HOME || process.env.USERPROFILE;
-      process.env.PATH = `${homeDir}/.local/bin:${process.env.PATH}`;
-    }
-    return true;
-  } catch (error) {
-    console.error('\n❌ Failed to install Poetry:', error.message);
-    return false;
-  }
-}
-
 function getPythonPath(cmd) {
   try {
     if (isWindows) {
@@ -133,6 +98,45 @@ function checkPython() {
     console.error('Download from: https://www.python.org/downloads/\n');
   }
   return false;
+}
+
+async function setupPoetry() {
+  console.log('📦 Setting up Poetry...');
+  
+  // Try to uninstall Poetry if it exists
+  try {
+    if (isWindows) {
+      execSync('(Invoke-WebRequest -Uri https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py -UseBasicParsing).Content | py - --uninstall', 
+        { shell: 'powershell.exe', stdio: 'inherit' });
+    } else {
+      execSync('curl -sSL https://install.python-poetry.org | python3 - --uninstall', { stdio: 'inherit' });
+    }
+  } catch (error) {
+    // Ignore uninstall errors
+  }
+
+  // Install Poetry
+  try {
+    if (isWindows) {
+      execSync('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -', 
+        { shell: 'powershell.exe', stdio: 'inherit' });
+    } else {
+      execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
+    }
+    
+    // Add Poetry to PATH for the current session
+    if (isWindows) {
+      const appData = process.env.APPDATA || path.join(process.env.USERPROFILE, 'AppData', 'Roaming');
+      process.env.PATH = `${path.join(appData, 'Python', 'Scripts')};${process.env.PATH}`;
+    } else {
+      const homeDir = process.env.HOME || process.env.USERPROFILE;
+      process.env.PATH = `${homeDir}/.local/bin:${process.env.PATH}`;
+    }
+    return true;
+  } catch (error) {
+    console.error('\n❌ Failed to install Poetry:', error.message);
+    return false;
+  }
 }
 
 async function main() {
@@ -221,46 +225,21 @@ WORKING_DIRECTORY=${workingDir}`;
     console.log('✅ Created NextJS environment configuration\n');
   }
 
-  // Check and install Poetry if needed
-  if (!await checkPoetry()) {
-    console.log('Poetry not found. Installing...');
-    if (!await installPoetry()) {
-      console.error('\n❌ Failed to install Poetry. Please install manually:');
-      if (isWindows) {
-        console.error('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -');
-      } else {
-        console.error('curl -sSL https://install.python-poetry.org | python3 -');
-      }
-      console.error('\nOr visit: https://python-poetry.org/docs/#installation\n');
-      process.exit(1);
-    }
+  // Setup Poetry and install dependencies
+  if (!await setupPoetry()) {
+    console.error('\n❌ Failed to setup Poetry. Please install manually:');
+    console.error('Visit: https://python-poetry.org/docs/#installation\n');
+    process.exit(1);
   }
 
   // Install Python dependencies
   console.log('📦 Installing Python dependencies...');
   try {
-    const pythonPath = process.env.PYTHON_PATH.replace(/\\/g, '/');
     const servicesDir = path.join(process.cwd(), 'apps', 'api', 'services');
-    
-    // Set Poetry to use project virtualenvs
-    execSync('poetry config virtualenvs.in-project true', { 
-      stdio: 'inherit',
-      cwd: servicesDir,
-      env: { ...process.env, POETRY_PYTHON: pythonPath }
-    });
-
-    // Create new virtual environment with specific Python version
-    execSync(`poetry env remove --all && poetry env use "${pythonPath}"`, {
-      stdio: 'inherit',
-      cwd: servicesDir,
-      env: { ...process.env, POETRY_PYTHON: pythonPath }
-    });
-
-    // Install dependencies
     execSync('poetry install', {
       stdio: 'inherit',
       cwd: servicesDir,
-      env: { ...process.env, POETRY_PYTHON: pythonPath }
+      env: { ...process.env }
     });
   } catch (error) {
     console.error('\n❌ Failed to install Python dependencies:', error.message);
