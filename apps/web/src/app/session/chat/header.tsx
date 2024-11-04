@@ -1,8 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export function Header({
   error,
@@ -13,36 +12,42 @@ export function Header({
   onNew: () => void;
   showNew: boolean;
 }) {
+  React.useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        duration: 4000,
+        position: "top-center",
+      });
+    }
+  }, [error]);
+
   return (
     <div className="w-full border-b bg-background">
-      <div className="container flex justify-between items-center py-2">
-        {error !== null ? (
-          <Alert variant="destructive" className="flex-1 mr-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Error: {error}</AlertDescription>
-          </Alert>
-        ) : (
-          <div className="flex-1">
-            {showNew && (
-              <Button
-                variant="outline"
-                onClick={onNew}
-                className="text-foreground"
-              >
-                New chat
-              </Button>
-            )}
-          </div>
-        )}
-        <div className="flex items-center gap-2">
-          {error !== null && (
-            <Button
-              variant="destructive"
-              onClick={onNew}
+      <div className="container flex justify-between items-center py-3">
+        <div className="flex items-center gap-6 flex-1">
+          <div className="flex items-baseline">
+            <span className="font-bold text-2xl tracking-tight text-primary">R-Pilot</span>
+            <a 
+              href="https://markury.dev" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="ml-2 text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Reset
+              by Markury
+            </a>
+          </div>
+          {showNew && !error && (
+            <Button
+              variant="outline"
+              onClick={onNew}
+              className="text-foreground"
+            >
+              New chat
             </Button>
           )}
+        </div>
+        
+        <div className="flex items-center gap-2">
           <ModeToggle />
         </div>
       </div>
