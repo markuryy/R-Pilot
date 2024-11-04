@@ -3,7 +3,8 @@ import { TbUser } from "react-icons/tb";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Sparkles } from "lucide-react";
 
 export default function ChatHistory({
   history,
@@ -27,8 +28,9 @@ export default function ChatHistory({
             {msg.role === "model" ? (
               <div className="mr-4 mt-2 min-w-[36px] relative">
                 <Avatar>
-                  <AvatarImage src="./icon.png" alt="AI" />
-                  <AvatarFallback>AI</AvatarFallback>
+                  <AvatarFallback className="bg-primary">
+                    <Sparkles className="h-5 w-5 text-primary-foreground" />
+                  </AvatarFallback>
                 </Avatar>
                 {thinking && idx === historyFiltered.length - 1 && (
                   <img
@@ -43,14 +45,14 @@ export default function ChatHistory({
             )}
             <div
               className={
-                "drop-shadow-sm rounded-md p-4 " +
-                (msg.role === "user" ? "bg-blue-100" : "bg-card")
+                "drop-shadow-sm rounded-xl p-4 " +
+                (msg.role === "user" ? "bg-primary/10" : "bg-card border")
               }
             >
               {msg.text === "" || msg.text === undefined ? (
                 "..."
               ) : (
-                <div className="prose prose-sm max-w-none">
+                <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap [&>table]:border-collapse [&>table]:w-full [&>table>thead>tr>th]:border [&>table>thead>tr>th]:border-border [&>table>thead>tr>th]:p-2 [&>table>tbody>tr>td]:border [&>table>tbody>tr>td]:border-border [&>table>tbody>tr>td]:p-2">
                   <ReactMarkdown
                     components={{
                       code(props) {
@@ -65,6 +67,13 @@ export default function ChatHistory({
                             {children}
                           </code>
                         );
+                      },
+                      table(props) {
+                        return (
+                          <div className="overflow-x-auto">
+                            <table {...props} />
+                          </div>
+                        );
                       }
                     }}
                   >
@@ -76,8 +85,8 @@ export default function ChatHistory({
             {msg.role === "user" ? (
               <div className="ml-4 mt-2">
                 <Avatar>
-                  <AvatarFallback>
-                    <TbUser className="h-6 w-6" />
+                  <AvatarFallback className="bg-primary">
+                    <TbUser className="h-5 w-5 text-primary-foreground" />
                   </AvatarFallback>
                 </Avatar>
               </div>
