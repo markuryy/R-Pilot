@@ -12,8 +12,14 @@ Your AI-powered R pair programmer, based on [IncognitoPilot](https://github.com/
    - Linux: `sudo apt-get install r-base`
 
 2. Install [Bun](https://bun.sh/)
+   
+   Linux & macOS:
    ```bash
    curl -fsSL https://bun.sh/install | bash
+   ```
+   Windows:
+   ```bash
+   powershell -c "irm bun.sh/install.ps1 | iex"
    ```
 
 3. Clone and setup:
