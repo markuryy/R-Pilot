@@ -46,3 +46,5 @@ apps/api/services/services/llm/llama/__pycache__
 apps/api/services/services/utils/__pycache__
 apps/api/services/services/__pycache__
 .reference/shadcnui
+.npmrc
+workspace
