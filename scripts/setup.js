@@ -61,14 +61,27 @@ async function installPoetry() {
   }
 }
 
+function checkPython() {
+  // Try different Python commands that might exist
+  const pythonCommands = ['python3', 'python', 'py'];
+  
+  for (const cmd of pythonCommands) {
+    try {
+      execSync(`${cmd} --version`, { stdio: 'ignore' });
+      return true;
+    } catch (error) {
+      continue;
+    }
+  }
+  return false;
+}
+
 async function main() {
   console.log('\n🚀 Setting up R-Pilot...\n');
 
   // Check Python installation
-  try {
-    execSync('python3 --version', { stdio: 'ignore' });
-  } catch (error) {
-    console.error('\n❌ Python 3 is required but not found. Please install Python 3 and try again.\n');
+  if (!checkPython()) {
+    console.error('\n❌ Python is required but not found. Please install Python and try again.\n');
     process.exit(1);
   }
 
