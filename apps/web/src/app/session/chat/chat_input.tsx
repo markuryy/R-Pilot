@@ -171,7 +171,7 @@ export default function ChatInput({
             }}
             disabled={disabled}
             placeholder={disabled ? "Please wait..." : "Type your message"}
-            className="min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none overflow-hidden border-0 p-0 shadow-none bg-transparent text-base leading-relaxed"
+            className="min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none border-0 p-0 shadow-none bg-transparent text-base leading-relaxed"
             rows={1}
           />
         </div>
