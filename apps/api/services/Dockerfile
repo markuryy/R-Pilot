@@ -14,11 +14,17 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app/services
 
+# Debug: Print current directory and list files
+RUN pwd && ls -la
+
 # Install Poetry
 RUN pip install poetry
 
-# Install project dependencies
-RUN poetry install --no-interaction --no-ansi
+# Debug: Print Poetry configuration and current directory contents
+RUN poetry config --list && pwd && ls -la
+
+# Install project dependencies with debugging
+RUN poetry install --no-interaction --no-ansi || (pwd && ls -la && cat pyproject.toml)
 
 # Set environment variables from .env file
 ENV OPENAI_API_KEY=${OPENAI_API_KEY} \
