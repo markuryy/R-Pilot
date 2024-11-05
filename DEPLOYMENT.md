@@ -50,10 +50,17 @@ This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.y
    cloudflared tunnel create rpilot
    ```
 
-3. Create `~/.cloudflared/config.yml`:
+3. Create the cloudflared config file:
+
+   On Linux/macOS, create at: `/home/YOUR_USERNAME/.cloudflared/config.yml`
+   On Windows, create at: `C:\Users\YOUR_USERNAME\.cloudflared\config.yml`
+
+   Note: Replace YOUR_USERNAME with your actual username. This is NOT in the R-Pilot project folder, but in your home directory.
+
+   Content of config.yml:
    ```yaml
    tunnel: TUNNEL_ID
-   credentials-file: /home/user/.cloudflared/TUNNEL_ID.json
+   credentials-file: /home/YOUR_USERNAME/.cloudflared/TUNNEL_ID.json  # On Windows: C:\Users\YOUR_USERNAME\.cloudflared\TUNNEL_ID.json
 
    ingress:
      - hostname: rpilot.yourdomain.com
@@ -62,6 +69,8 @@ This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.y
        service: http://localhost:8000
      - service: http_status:404
    ```
+
+   The .cloudflared directory and credentials file are automatically created when you run `cloudflared tunnel login`. You just need to create the config.yml file in the same directory.
 
 4. Create DNS records for your subdomains:
    ```bash
@@ -150,6 +159,8 @@ You can customize these in docker-compose.yml if needed:
    - Check tunnel logs: `cloudflared tunnel run --loglevel debug rpilot`
    - Verify DNS records in Cloudflare dashboard
    - Ensure cloudflared is up to date
+   - Make sure config.yml is in the correct location (in .cloudflared directory in your home folder)
+   - Check credentials file exists in the same directory as config.yml
 
 ## Security Notes
 
