@@ -8,10 +8,6 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     gnupg \
-    && wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc \
-    && wget https://cloud.r-project.org/bin/linux/debian/bullseye-cran40.list \
-    && mv bullseye-cran40.list /etc/apt/sources.list.d/cran.list \
-    && apt-get update \
     && apt-get install -y r-base r-base-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -42,7 +38,7 @@ ENV OPENAI_API_KEY=${OPENAI_API_KEY} \
     INTERPRETER_TIMEOUT=120 \
     ENABLE_CORS=TRUE \
     ALLOWED_HOSTS=localhost:3000 \
-    R_PATH=/usr/local/bin/R \
+    R_PATH=/usr/bin/R \
     NEXT_PUBLIC_API_URL=http://localhost:8000 \
     NEXT_PUBLIC_WS_URL=ws://localhost:8000 \
     WORKING_DIRECTORY=/workspace \
