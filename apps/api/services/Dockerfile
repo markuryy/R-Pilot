@@ -14,16 +14,10 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app/services
 
-# Create workspace directory
-RUN mkdir -p /workspace
-
 # Install Poetry
 RUN pip install poetry
 
-# Copy the entire project
-COPY . .
-
-# Configure Poetry to not create a virtual environment
+# Configure Poetry
 RUN poetry config virtualenvs.create false
 
 # Install project dependencies
@@ -44,9 +38,6 @@ ENV OPENAI_API_KEY=${OPENAI_API_KEY} \
 
 # Expose the port the app runs on
 EXPOSE 8000
-
-# Set the working directory for runtime
-WORKDIR /workspace
 
 # Use poetry to run the application
 CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
