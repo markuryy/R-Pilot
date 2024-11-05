@@ -17,9 +17,6 @@ WORKDIR /app/services
 # Install Poetry
 RUN pip install poetry
 
-# Configure Poetry
-RUN poetry config virtualenvs.create false
-
 # Install project dependencies
 RUN poetry install --no-interaction --no-ansi
 
