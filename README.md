@@ -40,36 +40,74 @@ Before you begin, ensure you have the following installed:
    ```bash
    bun run dev
    ```
-   Note: There's also a `start` script in package.json, but it currently doesn't work due to linting issues from rapid development. Stick with `dev` for now.
 
 3. Open the authentication link with the token shown in the terminal (starts with http://localhost:3000).
 
+## Manual Installation
+
+If the setup script fails, follow these steps:
+
+1. Create and activate a virtual environment:
+   ```bash
+   pushd apps/api/services
+   python -m venv venv
+   # On Unix/macOS:
+   source venv/bin/activate
+   # On Windows:
+   .\venv\Scripts\activate
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install poetry
+   poetry install
+   popd  # Back to root
+   bun install
+   ```
+
+3. Set up environment files:
+
+   Create `apps/api/services/.env`:
+   ```bash
+   OPENAI_API_KEY=your_api_key_here
+   INTERPRETER_TYPE=r
+   R_PATH=/path/to/R  # Get this using 'which R' on Unix or 'where R' on Windows
+   WORKING_DIRECTORY=/path/to/workspace
+   ALLOWED_HOSTS=localhost:3000
+   ENABLE_CORS=TRUE
+   ```
+
+   Create `apps/web/.env.local`:
+   ```bash
+   NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
+   ```
+
+4. Start the development servers:
+   ```bash
+   bun run dev
+   ```
+   This command starts both the backend and frontend services. If you prefer to run them separately:
+
+   Terminal 1 (Backend):
+   ```bash
+   cd apps/api/services
+   source venv/bin/activate  # or .\venv\Scripts\activate on Windows
+   poetry shell
+   uvicorn main:app --reload
+   ```
+
+   Terminal 2 (Frontend):
+   ```bash
+   cd apps/web
+   bun run dev
+   ```
+   
 ## Features
 
 - AI-powered R programming assistance
 - Interactive R code execution
 - Real-time output and plotting
 - Sandboxed environment for sharing files
-
-## Environment Configuration
-
-The .env file contains these important settings:
-
-```bash
-# Required
-OPENAI_API_KEY=               # Your OpenAI API key
-
-# Optional (defaults shown)
-INTERPRETER_TYPE=r            # Use R interpreter
-INTERPRETER_TIMEOUT=3600      # Timeout in seconds
-ALLOWED_HOSTS=localhost:3000
-```
-
-The NextJS app uses a .env.local file (automatically created during setup):
-
-```bash
-NEXT_PUBLIC_SERVICES_URL=http://localhost:8000  # Backend API URL
-```
 
 ## Common Issues
 

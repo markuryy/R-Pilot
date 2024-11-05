@@ -40,50 +40,18 @@ async function detectR() {
   return customPath;
 }
 
-function getPythonPath(cmd) {
-  try {
-    if (isWindows) {
-      return execSync(`${cmd} -c "import sys; print(sys.executable)"`, { encoding: 'utf8' }).trim();
-    } else {
-      return execSync(`which ${cmd}`, { encoding: 'utf8' }).trim();
-    }
-  } catch (error) {
-    return null;
-  }
-}
-
-function checkPythonVersion(cmd) {
-  try {
-    const version = execSync(`${cmd} -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"`, { encoding: 'utf8' }).trim();
-    const [major, minor] = version.split('.').map(Number);
-    
-    // Check if version is between 3.9 and 3.12
-    if (major === 3 && minor >= 9 && minor <= 12) {
-      return { version, path: getPythonPath(cmd) };
-    }
-    console.error(`\n❌ Python version ${version} is not supported.`);
-    console.error('Please install Python version 3.9-3.12');
-    if (isWindows) {
-      console.error('Download from: https://www.python.org/downloads/');
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
-}
-
 function checkPython() {
   // Try different Python commands that might exist
   const pythonCommands = isWindows ? ['python', 'py -3', 'python3'] : ['python3', 'python', 'py'];
   
   for (const cmd of pythonCommands) {
     try {
-      execSync(`${cmd} --version`, { stdio: 'ignore' });
-      const result = checkPythonVersion(cmd);
-      if (result) {
-        console.log(`✓ Found Python ${result.version} at: ${result.path}`);
-        // Store the working Python path for later use
-        process.env.PYTHON_PATH = result.path;
+      const version = execSync(`${cmd} -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"`, { encoding: 'utf8' }).trim();
+      const [major, minor] = version.split('.').map(Number);
+      
+      // Check if version is between 3.9 and 3.12
+      if (major === 3 && minor >= 9 && minor <= 12) {
+        console.log(`✓ Found Python ${version}`);
         process.env.PYTHON_CMD = cmd;
         return true;
       }
@@ -98,78 +66,6 @@ function checkPython() {
     console.error('Download from: https://www.python.org/downloads/\n');
   }
   return false;
-}
-
-async function setupPoetry() {
-  console.log('📦 Setting up Poetry...');
-
-  // Get poetry installation path
-  const poetryPath = isWindows
-    ? path.join(process.env.APPDATA || path.join(process.env.USERPROFILE, 'AppData', 'Roaming'), 'Python', 'Scripts', 'poetry.exe')
-    : path.join(process.env.HOME || process.env.USERPROFILE, '.local', 'bin', 'poetry');
-
-  // Check if poetry is already installed
-  try {
-    execSync('poetry --version', { stdio: 'ignore' });
-    console.log('✓ Poetry is already installed');
-    return true;
-  } catch (error) {
-    console.log('Installing Poetry...');
-  }
-
-  try {
-    // Install Poetry using the official installer
-    if (isWindows) {
-      // Download and run the Windows installer
-      execSync('(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -', 
-        { shell: 'powershell.exe', stdio: 'inherit' });
-      
-      // Add Poetry to the user's PATH in Windows registry
-      const poetryDir = path.dirname(poetryPath);
-      execSync(`setx PATH "%PATH%;${poetryDir}"`, { stdio: 'inherit' });
-      
-      // Also add to current session
-      process.env.PATH = `${poetryDir};${process.env.PATH}`;
-    } else {
-      // Install Poetry on Unix systems
-      execSync('curl -sSL https://install.python-poetry.org | python3 -', { stdio: 'inherit' });
-      
-      // Add Poetry to PATH in shell config
-      const homeDir = process.env.HOME;
-      const shellConfigFile = path.join(homeDir, process.env.SHELL.includes('zsh') ? '.zshrc' : '.bashrc');
-      const exportPath = `\n# Poetry\nexport PATH="$HOME/.local/bin:$PATH"\n`;
-      
-      if (fs.existsSync(shellConfigFile)) {
-        const currentContent = fs.readFileSync(shellConfigFile, 'utf8');
-        if (!currentContent.includes('$HOME/.local/bin')) {
-          fs.appendFileSync(shellConfigFile, exportPath);
-        }
-      } else {
-        fs.writeFileSync(shellConfigFile, exportPath);
-      }
-      
-      // Add to current session
-      process.env.PATH = `${path.dirname(poetryPath)}:${process.env.PATH}`;
-    }
-
-    // Verify installation
-    try {
-      execSync('poetry --version', { stdio: 'inherit' });
-      console.log('✓ Poetry installed successfully');
-      
-      // Configure poetry to create virtual environments in the project directory
-      execSync('poetry config virtualenvs.in-project true', { stdio: 'inherit' });
-      
-      return true;
-    } catch (error) {
-      console.error('\n❌ Poetry installation succeeded but command not found.');
-      console.error('Please restart your terminal and run setup again.\n');
-      return false;
-    }
-  } catch (error) {
-    console.error('\n❌ Failed to install Poetry:', error.message);
-    return false;
-  }
 }
 
 async function main() {
@@ -190,8 +86,32 @@ async function main() {
     process.exit(1);
   }
 
+  // Setup Python environment
+  console.log('📦 Setting up Python environment...');
+  const servicesDir = path.join(process.cwd(), 'apps', 'api', 'services');
+  try {
+    // Create and activate venv
+    execSync(`cd ${servicesDir} && ${process.env.PYTHON_CMD} -m venv venv`, {
+      stdio: 'inherit',
+      shell: true
+    });
+
+    // Install dependencies
+    const activateCmd = isWindows ? 
+      `.\\venv\\Scripts\\activate.bat &&` : 
+      'source venv/bin/activate &&';
+    
+    execSync(`cd ${servicesDir} && ${activateCmd} pip install poetry && poetry install`, {
+      stdio: 'inherit',
+      shell: true
+    });
+  } catch (error) {
+    console.error('\n❌ Failed to setup Python environment:', error.message);
+    process.exit(1);
+  }
+
   // Create .env if it doesn't exist
-  if (!fs.existsSync('.env')) {
+  if (!fs.existsSync(path.join('apps', 'api', 'services', '.env'))) {
     console.log('We need a few things to get started:\n');
     
     const openaiKey = await question('1. Enter your OpenAI API key (get one at https://platform.openai.com/api-keys): ');
@@ -207,47 +127,16 @@ async function main() {
       fs.mkdirSync(workingDir, { recursive: true });
     }
 
-    const envContent = `# Required
-OPENAI_API_KEY=${openaiKey}
-
-# Python Environment
+    const envContent = `OPENAI_API_KEY=${openaiKey}
 INTERPRETER_TYPE=r
-INTERPRETER_TIMEOUT=120
-ENABLE_CORS=TRUE
-ALLOWED_HOSTS=localhost:3000
 R_PATH=${rPath}
+WORKING_DIRECTORY=${workingDir}
+ALLOWED_HOSTS=localhost:3000
+ENABLE_CORS=TRUE`;
 
-# Frontend Environment
-NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
-
-# Working Directory
-WORKING_DIRECTORY=${workingDir}`;
-
-    // Write to root .env
-    fs.writeFileSync('.env', envContent);
-    
-    // Also write to services directory for Python
+    // Write to services .env
     fs.writeFileSync(path.join('apps', 'api', 'services', '.env'), envContent);
-    
-    console.log('✅ Created .env files with your configuration\n');
-  } else {
-    // If .env exists but R_PATH is missing, update it
-    try {
-      const envContent = fs.readFileSync('.env', 'utf8');
-      if (!envContent.includes('R_PATH=')) {
-        const rPath = await detectR();
-        const updatedContent = envContent + `\nR_PATH=${rPath}`;
-        
-        // Update both env files
-        fs.writeFileSync('.env', updatedContent);
-        fs.writeFileSync(path.join('apps', 'api', 'services', '.env'), updatedContent);
-        
-        console.log('✅ Updated .env files with R path\n');
-      }
-    } catch (error) {
-      console.error('Failed to update .env files:', error);
-      process.exit(1);
-    }
+    console.log('✅ Created services .env with your configuration\n');
   }
 
   // Setup NextJS environment
@@ -258,31 +147,10 @@ WORKING_DIRECTORY=${workingDir}`;
     console.log('✅ Created NextJS environment configuration\n');
   }
 
-  // Setup Poetry and install dependencies
-  if (!await setupPoetry()) {
-    console.error('\n❌ Failed to setup Poetry. Please restart your terminal and run setup again.\n');
-    process.exit(1);
-  }
-
-  // Install Python dependencies
-  console.log('📦 Installing Python dependencies...');
-  try {
-    const servicesDir = path.join(process.cwd(), 'apps', 'api', 'services');
-    execSync('poetry install', {
-      stdio: 'inherit',
-      cwd: servicesDir,
-      env: { ...process.env }
-    });
-  } catch (error) {
-    console.error('\n❌ Failed to install Python dependencies:', error.message);
-    process.exit(1);
-  }
-
-  console.log('\n✨ Setup complete! To start development:\n');
+  console.log('\n✨ Setup complete! Next steps:\n');
   console.log('1. Start the development servers:');
   console.log('   bun run dev\n');
   console.log('2. Look for the authentication URL in the terminal\n');
-  console.log('NOTE: If poetry command is not found, please restart your terminal to apply PATH changes.\n');
 
   rl.close();
 }
