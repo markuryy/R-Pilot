@@ -8,20 +8,25 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # Required - User must provide in root .env
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Container-specific paths and config
       - INTERPRETER_TYPE=r
       - R_PATH=/usr/bin/R
       - WORKING_DIRECTORY=/workspace
-      # Allow both direct access and access through frontend hostname
       - ALLOWED_HOSTS=localhost:3000,frontend:3000
       - FRONTEND_URL=localhost:3000
       - ENABLE_CORS=TRUE
+      - INTERPRETER_TIMEOUT=120
     volumes:
       - workspace:/workspace
     stdin_open: true
     tty: true
     networks:
       - rpilot-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   frontend:
     build:
@@ -30,7 +35,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Use container name for direct communication
       - NEXT_PUBLIC_SERVICES_URL=http://backend:8000
     depends_on:
       - backend
