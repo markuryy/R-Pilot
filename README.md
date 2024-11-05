@@ -31,7 +31,7 @@ Before you begin, ensure you have the following installed:
 1. Clone and setup:
    ```bash
    git clone https://github.com/markuryy/R-Pilot.git
-   cd r-pilot
+   cd R-Pilot
    bun install
    bun run setup
    ```
@@ -76,6 +76,8 @@ NEXT_PUBLIC_SERVICES_URL=http://localhost:8000  # Backend API URL
 1. Token Not Appearing
    - Check terminal output
    - Verify ALLOWED_HOSTS in .env
+   - Try opening http://localhost:3000 and wait for it to compile once
+   - Try manually specifying a token like `AUTH_TOKEN=69420` in `apps/api/services/.env`
 
 2. R Issues
    - Make sure R is installed: Run `R --version` in terminal

@@ -40,15 +40,25 @@ class RInterpreter:
         self.stop()
 
     def _start(self):
-        self._process = subprocess.Popen(
-            [str(self._r_path), "--vanilla", "--quiet", "--slave"],
-            text=True,
-            cwd=self._working_dir,
-            env=os.environ.copy(),
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
+        is_windows = sys.platform == "win32"
+        
+        # Base Popen arguments that work on all platforms
+        popen_args = {
+            "args": [str(self._r_path), "--vanilla", "--quiet", "--slave"],
+            "text": True,
+            "cwd": self._working_dir,
+            "env": os.environ.copy(),
+            "stdin": subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+        }
+        
+        # Add Windows-specific arguments
+        if is_windows:
+            popen_args["shell"] = True
+            popen_args["creationflags"] = subprocess.CREATE_NO_WINDOW
+        
+        self._process = subprocess.Popen(**popen_args)
         self._p_stdin = self._process.stdin
 
         self._stop_threads = False
@@ -121,8 +131,27 @@ class RInterpreter:
         self._read_stdout(timeout=10)
 
     def _create_script(self, script: str) -> Path:
-        # Wrap the script to capture and print the last value
-        wrapped_script = f"""
+        is_windows = sys.platform == "win32"
+        
+        if is_windows:
+            # On Windows, create temp files in the working directory
+            temp_dir = os.path.join(str(self._working_dir), "temp")
+            os.makedirs(temp_dir, exist_ok=True)
+            temp_file = os.path.join(temp_dir, f"script_{time.time()}.R")
+            
+            # Write the script with explicit encoding
+            with open(temp_file, "w", encoding="utf-8") as f:
+                f.write(self._wrap_script(script))
+            
+            return Path(temp_file)
+        else:
+            # On Unix systems, use the standard tempfile approach
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".R", delete=False) as f:
+                f.write(self._wrap_script(script))
+            return Path(f.name)
+
+    def _wrap_script(self, script: str) -> str:
+        return f"""
         # Suppress file connection warnings
         options(warn = -1)
         .Last.value <- tryCatch({{
@@ -137,13 +166,15 @@ class RInterpreter:
         cat("{self._END_MESSAGE}\\n")
         """
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".R", delete=False) as f:
-            f.write(wrapped_script)
-
-        return Path(f.name)
-
     def _run_script(self, script_path: Path):
-        self._write_stdin(f'source("{script_path}")\n')
+        is_windows = sys.platform == "win32"
+        path_str = str(script_path)
+        
+        # Handle path separators for Windows
+        if is_windows:
+            path_str = path_str.replace("\\", "\\\\")
+            
+        self._write_stdin(f'source("{path_str}")\n')
 
     def _fetch_result(self) -> Optional[str]:
         stdout = self._read_stdout(timeout=self._timeout)
@@ -159,7 +190,13 @@ class RInterpreter:
         """Run the R code and return the result.
         Returns None if the interpreter timed out."""
         script_path = self._create_script(script)
-        self._run_script(script_path)
-        result = self._fetch_result()
-        script_path.unlink()
+        try:
+            self._run_script(script_path)
+            result = self._fetch_result()
+        finally:
+            try:
+                if script_path.exists():
+                    script_path.unlink()
+            except:
+                pass  # Ignore cleanup errors
         return result
