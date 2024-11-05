@@ -41,7 +41,10 @@ Before you begin, ensure you have the following installed:
    bun run dev
    ```
 
-3. Open the authentication link with the token shown in the terminal (starts with http://localhost:3000).
+3. Open the authentication link shown in the terminal (starts with http://localhost:3000).
+   - The link includes a token that's valid for your session
+   - You can share this link with others to give them access
+   - The token persists in your browser for future sessions
 
 ## Manual Installation
 
@@ -76,6 +79,10 @@ If the setup script fails, follow these steps:
    ALLOWED_HOSTS=localhost:3000
    FRONTEND_URL=localhost:3000
    ENABLE_CORS=TRUE
+   # Optional: Set a specific auth token
+   AUTH_TOKEN=your_chosen_token
+   # Optional: Use HTTPS for auth links
+   USE_HTTPS=false
    ```
 
    Create `apps/web/.env.local`:
@@ -109,29 +116,39 @@ If the setup script fails, follow these steps:
 - Interactive R code execution
 - Real-time output and plotting
 - Sandboxed environment for sharing files
+- Shareable authentication links
 
 ## Common Issues
 
-1. Token Not Appearing
-   - Check terminal output
-   - Verify ALLOWED_HOSTS in .env
-   - Try opening http://localhost:3000 and wait for it to compile once
-   - Try manually specifying a token like `AUTH_TOKEN=69420` in `apps/api/services/.env`
+1. Authentication Issues
+   - Check terminal output for the correct authentication link
+   - Make sure to use http:// in development (not https://)
+   - You can set a custom token with `AUTH_TOKEN=your_token` in `apps/api/services/.env`
+   - The token is saved in your browser for future sessions
+   - Sharing the auth link with others will work as long as they use the same token
 
-2. R Issues
+2. Docker Authentication
+   - The authentication system works the same way in Docker
+   - Use the link provided in the backend container logs
+   - Container networking is automatically configured
+   - Images and files are served correctly between containers
+
+3. R Issues
    - Make sure R is installed: Run `R --version` in terminal
    - If R isn't found, reinstall from https://www.r-project.org/
    - If you must specify your own path, find it using `which R`
 
-3. Python Issues
+4. Python Issues
    - Make sure you have Python 3.9-3.12 installed (3.13+ not supported yet)
    - Windows: Download from https://www.python.org/downloads/
    - Mac: `brew install python@3.12`
    - Linux: Check your package manager for Python 3.9-3.12
 
-4. Connection Failed
+5. Connection Failed
    - Check if backend is running (look for messages in terminal)
    - Make sure ports 3000 and 8000 are free
+   - In Docker, check container logs with `docker compose logs`
+
 
 ## Deployment
 

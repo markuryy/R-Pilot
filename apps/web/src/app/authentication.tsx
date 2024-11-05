@@ -2,7 +2,7 @@
 
 import React, { createContext } from "react";
 import axios from "axios";
-import { BASE_SERVICES_URL } from "./services";
+import { getFullApiUrl } from "./services";
 
 export const AuthContext = createContext<string | null>(null);
 
@@ -17,25 +17,43 @@ export default function Authentication({
   const [token, setToken] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.hash.substring(1));
-    let token = urlParams.get("token");
-    if (token !== null) {
-      window.location.hash = "";
-      localStorage.setItem("auth_token", token);
-    } else {
-      token = localStorage.getItem("auth_token");
+    // First check URL hash for token (for shared links)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    let urlToken = hashParams.get("token");
+    
+    // Then check URL params (for direct links)
+    if (!urlToken) {
+      const queryParams = new URLSearchParams(window.location.search);
+      urlToken = queryParams.get("token");
     }
 
-    if (token !== null) {
+    // If token found in URL, save it and clean URL
+    if (urlToken) {
+      localStorage.setItem("auth_token", urlToken);
+      // Clean up URL without reloading page
+      const newUrl = window.location.pathname + 
+        window.location.search.replace(/[?&]token=[^&]+/, '') +
+        window.location.hash.replace(/[#&]token=[^&]+/, '');
+      window.history.replaceState({}, '', newUrl);
+    }
+
+    // Get token from storage or keep URL token
+    const storedToken = localStorage.getItem("auth_token");
+    const finalToken = urlToken || storedToken;
+
+    if (finalToken) {
+      // Use relative URL for better Docker compatibility
       axios
-        .post(`${BASE_SERVICES_URL}/api/auth/verify`, {
-          token,
+        .post(getFullApiUrl("/api/auth/verify"), {
+          token: finalToken,
         })
         .then(() => {
-          setToken(token);
+          setToken(finalToken);
         })
         .catch((error) => {
           console.error("Authentication failed:", error);
+          // Clear invalid token
+          localStorage.removeItem("auth_token");
         });
     }
   }, []);
