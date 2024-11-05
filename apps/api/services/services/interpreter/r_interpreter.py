@@ -42,21 +42,35 @@ class RInterpreter:
     def _start(self):
         is_windows = sys.platform == "win32"
         
-        # Base Popen arguments that work on all platforms
-        popen_args = {
-            "args": [str(self._r_path), "--vanilla", "--quiet", "--slave"],
-            "text": True,
-            "cwd": self._working_dir,
-            "env": os.environ.copy(),
-            "stdin": subprocess.PIPE,
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-        }
+        # Ensure working directory exists
+        os.makedirs(self._working_dir, exist_ok=True)
         
-        # Add Windows-specific arguments
+        # Base Popen arguments that work on all platforms
         if is_windows:
-            popen_args["shell"] = True
-            popen_args["creationflags"] = subprocess.CREATE_NO_WINDOW
+            # On Windows, combine arguments into a single string when using shell=True
+            cmd = f'"{self._r_path}" --vanilla --quiet --slave'
+            popen_args = {
+                "args": cmd,
+                "text": True,
+                "cwd": self._working_dir,
+                "env": os.environ.copy(),
+                "stdin": subprocess.PIPE,
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.PIPE,
+                "shell": True,
+                "creationflags": subprocess.CREATE_NO_WINDOW
+            }
+        else:
+            # On Unix systems, use argument list
+            popen_args = {
+                "args": [str(self._r_path), "--vanilla", "--quiet", "--slave"],
+                "text": True,
+                "cwd": self._working_dir,
+                "env": os.environ.copy(),
+                "stdin": subprocess.PIPE,
+                "stdout": subprocess.PIPE,
+                "stderr": subprocess.PIPE
+            }
         
         self._process = subprocess.Popen(**popen_args)
         self._p_stdin = self._process.stdin
