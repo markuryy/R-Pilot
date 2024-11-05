@@ -14,7 +14,6 @@ websockets = "^11.0.3"
 openai = "<1.0"
 replicate = "^0.11.0"
 text-generation = "^0.6.0"
-sentencepiece = "^0.1.99"
 multidict = ">=5.0.0,<6.0.0"
 python-dotenv = "^1.0.1"
 
