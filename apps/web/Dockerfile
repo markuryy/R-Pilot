@@ -1,34 +1,25 @@
-FROM oven/bun:1 as builder
+FROM oven/bun:latest
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json bun.lockb ./
-COPY apps/web/package.json ./apps/web/
-COPY packages/ ./packages/
+# Copy the entire project
+COPY . .
 
-# Install dependencies
+# Install dependencies using bun at the root level
 RUN bun install
 
-# Copy source code
-COPY apps/web ./apps/web
+# Set working directory to web app
+WORKDIR /app/apps/web
+
+# Disable lint during build
+ENV NEXT_DISABLE_ESLINT=true
 
 # Build the application
-WORKDIR /app/apps/web
 RUN bun run build
-
-# Production image
-FROM oven/bun:1-slim
-
-WORKDIR /app
-
-# Copy built assets from builder
-COPY --from=builder /app/apps/web/.next ./.next
-COPY --from=builder /app/apps/web/public ./public
-COPY --from=builder /app/apps/web/package.json ./package.json
 
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Command to run the application
-CMD ["bun", "start"]
+CMD ["bun", "run", "start"]

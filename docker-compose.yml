@@ -16,6 +16,8 @@ services:
       - ENABLE_CORS=TRUE
     volumes:
       - workspace:/workspace
+    stdin_open: true
+    tty: true
 
   frontend:
     build:
@@ -27,6 +29,8 @@ services:
       - NEXT_PUBLIC_SERVICES_URL=http://backend:8000
     depends_on:
       - backend
+    stdin_open: true
+    tty: true
 
 volumes:
   workspace:

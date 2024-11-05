@@ -8,23 +8,23 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
+# Install poetry using pip
+RUN pip install poetry
 
 # Set working directory
 WORKDIR /app
 
-# Copy poetry files
-COPY pyproject.toml poetry.lock ./
+# Copy the entire project
+COPY . .
+
+# Set working directory to services
+WORKDIR /app/apps/api/services
 
 # Configure poetry to not create virtual environment (we're in a container)
 RUN poetry config virtualenvs.create false
 
 # Install dependencies
 RUN poetry install --no-interaction --no-ansi
-
-# Copy application code
-COPY . .
 
 # Create workspace directory
 RUN mkdir -p /workspace
