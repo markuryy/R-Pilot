@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: apps/api/services/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - INTERPRETER_TYPE=r
+      - R_PATH=/usr/bin/R
+      - WORKING_DIRECTORY=/workspace
+      - ALLOWED_HOSTS=frontend:3000
+      - ENABLE_CORS=TRUE
+    volumes:
+      - workspace:/workspace
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_SERVICES_URL=http://backend:8000
+    depends_on:
+      - backend
+
+volumes:
+  workspace:
