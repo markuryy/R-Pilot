@@ -23,31 +23,76 @@ This guide covers deploying R-Pilot for personal use or sharing with friends usi
    AUTH_TOKEN=your_chosen_token_here  # e.g., AUTH_TOKEN=mysecrettoken123
    ```
 
-3. If you want to expose R-Pilot to the internet (e.g., for friends to use):
-   
-   Edit the `docker-compose.yml` file and update these environment variables:
-   ```yaml
-   backend:
-     environment:
-       - ALLOWED_HOSTS=your-domain.com,localhost:3000
-   
-   frontend:
-     environment:
-       - NEXT_PUBLIC_SERVICES_URL=https://your-domain.com:8000
-   ```
-
-4. Build and start the containers:
+3. Build and start the containers:
    ```bash
    docker compose up --build
    ```
 
-5. Access the application:
-   - Local use: http://localhost:3000
-   - Remote use: https://your-domain.com
+4. Access the application at http://localhost:3000 (or with your token: http://localhost:3000?token=your_chosen_token_here)
+
+## Deploying with Cloudflare Tunnel (Recommended for Sharing)
+
+This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.yourdomain.com) without opening ports or configuring complex networking.
+
+### Prerequisites
+- A domain registered with Cloudflare
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/) installed
+
+### Setup Steps
+
+1. Login to Cloudflare:
+   ```bash
+   cloudflared tunnel login
+   ```
+
+2. Create a tunnel (you'll get a TUNNEL_ID):
+   ```bash
+   cloudflared tunnel create rpilot
+   ```
+
+3. Create `~/.cloudflared/config.yml`:
+   ```yaml
+   tunnel: TUNNEL_ID
+   credentials-file: /home/user/.cloudflared/TUNNEL_ID.json
+
+   ingress:
+     - hostname: rpilot.yourdomain.com
+       service: http://localhost:3000
+     - hostname: rpilot-api.yourdomain.com
+       service: http://localhost:8000
+     - service: http_status:404
+   ```
+
+4. Create DNS records for your subdomains:
+   ```bash
+   cloudflared tunnel route dns TUNNEL_ID rpilot.yourdomain.com
+   cloudflared tunnel route dns TUNNEL_ID rpilot-api.yourdomain.com
+   ```
+
+5. Update docker-compose.yml:
+   ```yaml
+   backend:
+     environment:
+       - ALLOWED_HOSTS=rpilot.yourdomain.com,rpilot-api.yourdomain.com,localhost:3000
    
-   If you set a specific AUTH_TOKEN, the URL will be:
-   - Local: http://localhost:3000?token=your_chosen_token_here
-   - Remote: https://your-domain.com?token=your_chosen_token_here
+   frontend:
+     environment:
+       - NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.yourdomain.com
+   ```
+
+6. Start R-Pilot:
+   ```bash
+   docker compose up -d
+   ```
+
+7. Start the tunnel:
+   ```bash
+   cloudflared tunnel run rpilot
+   ```
+
+Your R-Pilot instance will now be available at:
+- Frontend: https://rpilot.yourdomain.com
+- With auth token: https://rpilot.yourdomain.com?token=your_chosen_token_here
 
 ## Environment Variables
 
@@ -90,21 +135,26 @@ You can customize these in docker-compose.yml if needed:
 1. **Can't Access the Application**
    - Check if containers are running: `docker compose ps`
    - Verify ports 3000 and 8000 aren't in use
-   - If using a domain, ensure DNS is properly configured
+   - If using Cloudflare Tunnel, check tunnel status: `cloudflared tunnel info rpilot`
 
 2. **Authentication Issues**
    - If you set a custom AUTH_TOKEN, make sure to include it in the URL
    - Check the backend logs for authentication errors
-   - Verify ALLOWED_HOSTS includes your domain
+   - Verify ALLOWED_HOSTS includes your domain/subdomain
 
 3. **R or Python Issues**
    - Check container logs: `docker compose logs backend`
    - Verify R is working: `docker compose exec backend R --version`
 
+4. **Cloudflare Tunnel Issues**
+   - Check tunnel logs: `cloudflared tunnel run --loglevel debug rpilot`
+   - Verify DNS records in Cloudflare dashboard
+   - Ensure cloudflared is up to date
+
 ## Security Notes
 
 1. If exposing to the internet:
-   - Always use HTTPS
+   - Use Cloudflare Tunnel for secure access (recommended)
    - Set a strong AUTH_TOKEN
    - Keep your OpenAI API key secure
    - Regularly update Docker images
@@ -120,3 +170,8 @@ To update R-Pilot:
 git pull
 docker compose down
 docker compose up --build -d
+```
+
+If using Cloudflare Tunnel, restart it after updating:
+```bash
+cloudflared tunnel run rpilot
