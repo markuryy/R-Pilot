@@ -46,31 +46,19 @@ class RInterpreter:
         os.makedirs(self._working_dir, exist_ok=True)
         
         # Base Popen arguments that work on all platforms
+        popen_args = {
+            "args": [str(self._r_path), "--vanilla", "--quiet", "--slave"],
+            "text": True,
+            "cwd": str(self._working_dir),  # Convert Path to string
+            "env": os.environ.copy(),
+            "stdin": subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE
+        }
+        
+        # Add Windows-specific flags if needed
         if is_windows:
-            # On Windows, combine arguments into a single string when using shell=True
-            cmd = f'"{self._r_path}" --vanilla --quiet --slave'
-            popen_args = {
-                "args": cmd,
-                "text": True,
-                "cwd": self._working_dir,
-                "env": os.environ.copy(),
-                "stdin": subprocess.PIPE,
-                "stdout": subprocess.PIPE,
-                "stderr": subprocess.PIPE,
-                "shell": True,
-                "creationflags": subprocess.CREATE_NO_WINDOW
-            }
-        else:
-            # On Unix systems, use argument list
-            popen_args = {
-                "args": [str(self._r_path), "--vanilla", "--quiet", "--slave"],
-                "text": True,
-                "cwd": self._working_dir,
-                "env": os.environ.copy(),
-                "stdin": subprocess.PIPE,
-                "stdout": subprocess.PIPE,
-                "stderr": subprocess.PIPE
-            }
+            popen_args["creationflags"] = subprocess.CREATE_NO_WINDOW
         
         self._process = subprocess.Popen(**popen_args)
         self._p_stdin = self._process.stdin
@@ -147,22 +135,20 @@ class RInterpreter:
     def _create_script(self, script: str) -> Path:
         is_windows = sys.platform == "win32"
         
-        if is_windows:
-            # On Windows, create temp files in the working directory
-            temp_dir = os.path.join(str(self._working_dir), "temp")
-            os.makedirs(temp_dir, exist_ok=True)
-            temp_file = os.path.join(temp_dir, f"script_{time.time()}.R")
-            
-            # Write the script with explicit encoding
-            with open(temp_file, "w", encoding="utf-8") as f:
-                f.write(self._wrap_script(script))
-            
-            return Path(temp_file)
-        else:
-            # On Unix systems, use the standard tempfile approach
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".R", delete=False) as f:
-                f.write(self._wrap_script(script))
-            return Path(f.name)
+        # Create a temporary directory in the working directory
+        temp_dir = os.path.join(str(self._working_dir), "temp")
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        # Generate a unique filename
+        timestamp = str(int(time.time() * 1000))
+        filename = f"script_{timestamp}.R"
+        script_path = os.path.join(temp_dir, filename)
+        
+        # Write the script
+        with open(script_path, "w", encoding="utf-8") as f:
+            f.write(self._wrap_script(script))
+        
+        return Path(script_path)
 
     def _wrap_script(self, script: str) -> str:
         return f"""
@@ -181,13 +167,8 @@ class RInterpreter:
         """
 
     def _run_script(self, script_path: Path):
-        is_windows = sys.platform == "win32"
-        path_str = str(script_path)
-        
-        # Handle path separators for Windows
-        if is_windows:
-            path_str = path_str.replace("\\", "\\\\")
-            
+        # Convert path to a string with forward slashes
+        path_str = str(script_path).replace("\\", "/")
         self._write_stdin(f'source("{path_str}")\n')
 
     def _fetch_result(self) -> Optional[str]:
