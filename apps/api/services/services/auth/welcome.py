@@ -10,16 +10,12 @@ async def welcome_lifespan(app: FastAPI):
     print("***")
     print("Welcome to R-Pilot")
     
-    # Use first allowed host or default to localhost
-    frontend_host = ALLOWED_HOSTS[0] if ALLOWED_HOSTS else 'localhost:3000'
+    frontend_url = os.environ.get('FRONTEND_URL', 'localhost:3000')
     
-    if len(ALLOWED_HOSTS) == 1:
-        print("To start, open the following URL:")
-    else:
-        print("To start, open one of the following URLs:")
+    print("To start, open the following URL:")
     
-    # Generate URLs with the actual frontend host
-    print(f"  http://{frontend_host}#token={AUTH_TOKEN}")
+    # Generate URL with the frontend domain from environment variable
+    print(f"  https://{frontend_url}?token={AUTH_TOKEN}")
     
     print("***")
     yield

@@ -12,7 +12,8 @@ services:
       - INTERPRETER_TYPE=r
       - R_PATH=/usr/bin/R
       - WORKING_DIRECTORY=/workspace
-      - ALLOWED_HOSTS=frontend:3000
+      - ALLOWED_HOSTS=localhost:3000
+      - FRONTEND_URL=localhost:3000
       - ENABLE_CORS=TRUE
     volumes:
       - workspace:/workspace

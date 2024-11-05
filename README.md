@@ -74,6 +74,7 @@ If the setup script fails, follow these steps:
    R_PATH=/path/to/R  # Get this using 'which R' on Unix or 'where R' on Windows
    WORKING_DIRECTORY=/path/to/workspace
    ALLOWED_HOSTS=localhost:3000
+   FRONTEND_URL=localhost:3000
    ENABLE_CORS=TRUE
    ```
 
@@ -101,7 +102,7 @@ If the setup script fails, follow these steps:
    cd apps/web
    bun run dev
    ```
-   
+
 ## Features
 
 - AI-powered R programming assistance

@@ -132,6 +132,7 @@ INTERPRETER_TYPE=r
 R_PATH=${rPath}
 WORKING_DIRECTORY=${workingDir}
 ALLOWED_HOSTS=localhost:3000
+FRONTEND_URL=localhost:3000
 ENABLE_CORS=TRUE`;
 
     // Write to services .env
