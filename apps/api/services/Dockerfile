@@ -20,17 +20,14 @@ RUN mkdir -p /workspace
 # Install Poetry
 RUN pip install poetry
 
-# Copy only the necessary files for dependency installation
-COPY pyproject.toml poetry.lock* ./
+# Copy the entire project
+COPY . .
 
 # Configure Poetry to not create a virtual environment
 RUN poetry config virtualenvs.create false
 
 # Install project dependencies
 RUN poetry install --no-interaction --no-ansi
-
-# Copy the rest of the application
-COPY . .
 
 # Set environment variables from .env file
 ENV OPENAI_API_KEY=${OPENAI_API_KEY} \
