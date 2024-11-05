@@ -2,7 +2,7 @@
 
 import React, { createContext } from "react";
 import axios from "axios";
-import { SERVICES_URL } from "./services";
+import { BASE_SERVICES_URL } from "./services";
 
 export const AuthContext = createContext<string | null>(null);
 
@@ -28,13 +28,15 @@ export default function Authentication({
 
     if (token !== null) {
       axios
-        .post(SERVICES_URL + "/api/auth/verify", {
+        .post(`${BASE_SERVICES_URL}/api/auth/verify`, {
           token,
         })
         .then(() => {
           setToken(token);
         })
-        .catch(() => {}); // will show error later
+        .catch((error) => {
+          console.error("Authentication failed:", error);
+        });
     }
   }, []);
 
