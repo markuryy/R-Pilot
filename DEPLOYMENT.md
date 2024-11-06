@@ -41,7 +41,7 @@ R-Pilot uses a two-container setup:
 
 1. Backend Container (Python/FastAPI)
    - Handles API requests and websocket connections
-   - Runs R interpreter with dynamic package installation
+   - Runs R interpreter with pre-installed packages
    - Communicates with OpenAI API
    - Available at http://localhost:8000
 
@@ -58,10 +58,23 @@ The containers are connected through:
 ## R Environment in Docker
 
 The backend container includes a fully functional R environment:
+
+Pre-installed R Packages:
+- tidyverse: Collection of data science packages
+- ggplot2: Data visualization
+- dplyr: Data manipulation
+- readr: Data import
+- tibble: Modern data frames
+- stringr: String manipulation
+- lubridate: Date/time handling
+- forcats: Factor manipulation
+- purrr: Functional programming
+- tidyr: Data tidying
+
+Additional Features:
 - R and R-dev packages are pre-installed
-- Dynamic package installation is enabled during runtime
 - Package installation directory is properly configured
-- Write permissions are set up for package installation
+- Write permissions are set up for package operations
 - Workspace directory is available for file operations
 
 ## Deploying with Cloudflare Tunnel (Recommended for Sharing)
@@ -146,7 +159,7 @@ Your R-Pilot instance will now be available at:
 ### Container Configuration
 The Docker containers are pre-configured with appropriate paths and settings:
 - R is installed at `/usr/bin/R`
-- R packages can be installed at runtime
+- Common R packages are pre-installed
 - Working directory is set to `/workspace`
 - All necessary environment variables are set in docker-compose.yml
 
@@ -186,11 +199,11 @@ The Docker containers are pre-configured with appropriate paths and settings:
    - Make sure containers have internet access
    - The backend container uses Google DNS (8.8.8.8) for reliable external access
 
-3. **R Package Installation Issues**
-   - Package installation may take some time during first use
-   - Check backend logs for compilation output
+3. **R Package Issues**
+   - Common data science packages are pre-installed
+   - Package installation during runtime may require compilation
+   - Check backend logs for package-related messages
    - The container has necessary build tools installed
-   - Package installation directory is writable
 
 4. **WebSocket Connection Issues**
    - WebSocket URLs are automatically derived from the NEXT_PUBLIC_SERVICES_URL

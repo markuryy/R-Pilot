@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
+# Pre-install common R packages
+RUN R -e "install.packages(c('tidyverse', 'ggplot2', 'dplyr', 'readr', 'tibble', 'stringr', 'lubridate', 'forcats', 'purrr', 'tidyr'), repos='https://cloud.r-project.org/')"
+
 # Create R package directory with write permissions
 RUN mkdir -p /usr/local/lib/R/site-library && \
     chmod 777 /usr/local/lib/R/site-library
@@ -41,8 +44,6 @@ ENV R_PATH=/usr/bin/R
 ENV WORKING_DIRECTORY=/workspace
 ENV ENABLE_CORS=TRUE
 ENV ALLOWED_HOSTS=*
-# Set R package installation directory
-ENV R_LIBS_USER=/usr/local/lib/R/site-library
 
 # Expose the port the app runs on
 EXPOSE 8000
