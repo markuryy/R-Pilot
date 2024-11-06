@@ -6,7 +6,13 @@ RUN apt-get update && apt-get install -y \
     r-base-dev \
     git \
     curl \
+    gcc \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
+
+# Create R package directory with write permissions
+RUN mkdir -p /usr/local/lib/R/site-library && \
+    chmod 777 /usr/local/lib/R/site-library
 
 # Install poetry using pip
 RUN pip install poetry
@@ -26,8 +32,8 @@ RUN poetry config virtualenvs.create false
 # Install dependencies
 RUN poetry install --no-interaction --no-ansi
 
-# Create workspace directory
-RUN mkdir -p /workspace
+# Create workspace directory with write permissions
+RUN mkdir -p /workspace && chmod 777 /workspace
 
 # Set environment variables
 ENV INTERPRETER_TYPE=r
@@ -35,6 +41,8 @@ ENV R_PATH=/usr/bin/R
 ENV WORKING_DIRECTORY=/workspace
 ENV ENABLE_CORS=TRUE
 ENV ALLOWED_HOSTS=*
+# Set R package installation directory
+ENV R_LIBS_USER=/usr/local/lib/R/site-library
 
 # Expose the port the app runs on
 EXPOSE 8000

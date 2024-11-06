@@ -41,7 +41,7 @@ R-Pilot uses a two-container setup:
 
 1. Backend Container (Python/FastAPI)
    - Handles API requests and websocket connections
-   - Runs R interpreter
+   - Runs R interpreter with dynamic package installation
    - Communicates with OpenAI API
    - Available at http://localhost:8000
 
@@ -54,6 +54,15 @@ The containers are connected through:
 - A shared Docker network for container-to-container communication
 - Port mapping to make services available on localhost
 - Environment variables configured for proper networking
+
+## R Environment in Docker
+
+The backend container includes a fully functional R environment:
+- R and R-dev packages are pre-installed
+- Dynamic package installation is enabled during runtime
+- Package installation directory is properly configured
+- Write permissions are set up for package installation
+- Workspace directory is available for file operations
 
 ## Deploying with Cloudflare Tunnel (Recommended for Sharing)
 
@@ -137,6 +146,7 @@ Your R-Pilot instance will now be available at:
 ### Container Configuration
 The Docker containers are pre-configured with appropriate paths and settings:
 - R is installed at `/usr/bin/R`
+- R packages can be installed at runtime
 - Working directory is set to `/workspace`
 - All necessary environment variables are set in docker-compose.yml
 
@@ -176,20 +186,22 @@ The Docker containers are pre-configured with appropriate paths and settings:
    - Make sure containers have internet access
    - The backend container uses Google DNS (8.8.8.8) for reliable external access
 
-3. **WebSocket Connection Issues**
+3. **R Package Installation Issues**
+   - Package installation may take some time during first use
+   - Check backend logs for compilation output
+   - The container has necessary build tools installed
+   - Package installation directory is writable
+
+4. **WebSocket Connection Issues**
    - WebSocket URLs are automatically derived from the NEXT_PUBLIC_SERVICES_URL
    - In development, they use ws:// for http:// and wss:// for https://
    - Check browser console for connection errors
    - Verify ALLOWED_HOSTS includes the correct domains
 
-4. **Container Networking**
+5. **Container Networking**
    - Frontend container accesses backend via localhost:8000
    - Backend container is accessible as 'backend:8000' within the network
    - File and image serving works through the mapped ports
-
-5. **R or Python Issues**
-   - Check container logs: `docker compose logs backend`
-   - Verify R is working: `docker compose exec backend R --version`
 
 6. **Cloudflare Tunnel Issues**
    - Check tunnel logs: `cloudflared tunnel run --loglevel debug rpilot`
