@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import LetterPullup from '@/components/ui/letter-pullup';
 
 type Tagline = {
@@ -34,7 +33,8 @@ export default function Brand() {
   return (
     <div className="flex h-full flex-col items-center justify-center">
       <div className="w-48">
-        <Image src="/icon_color.png" alt="Brand" width={192} height={192} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/icon_color.png" alt="Brand" width={192} height={192} />
       </div>
       <div className="text-2xl text-primary mt-4">
         R-Pilot
