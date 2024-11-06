@@ -15,6 +15,10 @@ WORKDIR /app/apps/web
 # Disable lint during build
 ENV NEXT_DISABLE_ESLINT=true
 
+# Set build-time environment variables
+ARG NEXT_PUBLIC_SERVICES_URL
+ENV NEXT_PUBLIC_SERVICES_URL=${NEXT_PUBLIC_SERVICES_URL}
+
 # Build the application
 RUN bun run build
 

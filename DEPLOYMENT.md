@@ -241,3 +241,26 @@ docker compose up --build -d
 If using Cloudflare Tunnel, restart it after updating:
 ```bash
 cloudflared tunnel run rpilot
+
+## Important Note About Domain Deployment
+
+When deploying with a domain (step 5 in Cloudflare Tunnel setup), make sure to update docker-compose.yml correctly:
+
+```yaml
+frontend:
+  build:
+    args:
+      # Required at build time for Next.js static optimization
+      - NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.yourdomain.com
+  environment:
+    # Must match the build arg
+    - NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.yourdomain.com
+```
+
+The frontend's NEXT_PUBLIC_SERVICES_URL must:
+
+- Be set as both a build arg and environment variable
+- Point to the API domain (rpilot-api.yourdomain.com), not the frontend domain
+- Include the protocol (https://)
+
+This ensures proper authentication and API communication in production.

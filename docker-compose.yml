@@ -15,7 +15,11 @@ services:
       - R_PATH=/usr/bin/R
       - WORKING_DIRECTORY=/workspace
       # List hosts without protocols since they're stripped in websocket verification
-      - ALLOWED_HOSTS=localhost:3000 frontend:3000 backend:8000
+      # For production: add your domains
+      # Example: ALLOWED_HOSTS=localhost:3000 rpilot.example.com rpilot-api.example.com
+      - ALLOWED_HOSTS=localhost:3000
+      # For production: replace with your frontend domain
+      # Example: FRONTEND_URL=rpilot.example.com
       - FRONTEND_URL=localhost:3000
       - ENABLE_CORS=TRUE
       - INTERPRETER_TIMEOUT=120
@@ -35,10 +39,15 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # For production: replace with your API domain
+        # Example: NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.example.com
+        - NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
     ports:
       - "3000:3000"
     environment:
-      # Use localhost for browser access
+      # For production: replace with your API domain
+      # Example: NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.example.com
       - NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
     volumes:
       - workspace:/workspace
