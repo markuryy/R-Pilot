@@ -25,10 +25,35 @@ This guide covers deploying R-Pilot for personal use or sharing with friends usi
    docker compose up --build
    ```
 
-4. Access the application using the authentication link shown in the backend container logs.
+4. Check the backend logs for the authentication link:
+   ```bash
+   docker compose logs backend
+   ```
+
+5. Access the application using the authentication link shown in the logs.
    - The link includes a token that's valid for your session
    - You can share this link with others to give them access
    - The token persists in browsers for future sessions
+
+## Container Architecture
+
+R-Pilot uses a two-container setup:
+
+1. Backend Container (Python/FastAPI)
+   - Handles API requests and websocket connections
+   - Runs R interpreter
+   - Communicates with OpenAI API
+   - Available at http://localhost:8000
+
+2. Frontend Container (Next.js)
+   - Serves the web interface
+   - Communicates with backend via HTTP and WebSocket
+   - Available at http://localhost:3000
+
+The containers are connected through:
+- A shared Docker network for container-to-container communication
+- Port mapping to make services available on localhost
+- Environment variables configured for proper networking
 
 ## Deploying with Cloudflare Tunnel (Recommended for Sharing)
 
@@ -82,7 +107,7 @@ This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.y
    ```yaml
    backend:
      environment:
-       - ALLOWED_HOSTS=rpilot.yourdomain.com,rpilot-api.yourdomain.com,localhost:3000
+       - ALLOWED_HOSTS=rpilot.yourdomain.com rpilot-api.yourdomain.com localhost:3000
        - FRONTEND_URL=rpilot.yourdomain.com
    
    frontend:
@@ -102,7 +127,7 @@ This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.y
 
 Your R-Pilot instance will now be available at:
 - Frontend: https://rpilot.yourdomain.com
-- With auth token: The link shown in backend container logs
+- With auth token: Check backend logs with `docker compose logs backend`
 
 ## Environment Variables
 
@@ -149,17 +174,24 @@ The Docker containers are pre-configured with appropriate paths and settings:
    - Verify your API key is correct in the root .env file
    - Check backend logs for any API errors
    - Make sure containers have internet access
+   - The backend container uses Google DNS (8.8.8.8) for reliable external access
 
-3. **Container Networking**
-   - Container communication is handled automatically
-   - Frontend can access backend via container name
-   - File and image serving works across containers
+3. **WebSocket Connection Issues**
+   - WebSocket URLs are automatically derived from the NEXT_PUBLIC_SERVICES_URL
+   - In development, they use ws:// for http:// and wss:// for https://
+   - Check browser console for connection errors
+   - Verify ALLOWED_HOSTS includes the correct domains
 
-4. **R or Python Issues**
+4. **Container Networking**
+   - Frontend container accesses backend via localhost:8000
+   - Backend container is accessible as 'backend:8000' within the network
+   - File and image serving works through the mapped ports
+
+5. **R or Python Issues**
    - Check container logs: `docker compose logs backend`
    - Verify R is working: `docker compose exec backend R --version`
 
-5. **Cloudflare Tunnel Issues**
+6. **Cloudflare Tunnel Issues**
    - Check tunnel logs: `cloudflared tunnel run --loglevel debug rpilot`
    - Verify DNS records in Cloudflare dashboard
    - Ensure cloudflared is up to date

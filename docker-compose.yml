@@ -14,10 +14,13 @@ services:
       - INTERPRETER_TYPE=r
       - R_PATH=/usr/bin/R
       - WORKING_DIRECTORY=/workspace
-      - ALLOWED_HOSTS=localhost:3000,frontend:3000
+      # List hosts without protocols since they're stripped in websocket verification
+      - ALLOWED_HOSTS=localhost:3000 frontend:3000 backend:8000
       - FRONTEND_URL=localhost:3000
       - ENABLE_CORS=TRUE
       - INTERPRETER_TIMEOUT=120
+      # LLM configuration
+      - LLM=gpt-openai:gpt-4o
     volumes:
       - workspace:/workspace
     stdin_open: true
@@ -35,7 +38,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_SERVICES_URL=http://backend:8000
+      # Use localhost for browser access
+      - NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
     depends_on:
       - backend
     stdin_open: true
