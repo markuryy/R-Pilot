@@ -40,6 +40,8 @@ services:
     environment:
       # Use localhost for browser access
       - NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
+    volumes:
+      - workspace:/workspace
     depends_on:
       - backend
     stdin_open: true
