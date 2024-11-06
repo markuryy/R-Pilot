@@ -10,6 +10,8 @@ services:
     environment:
       # Required - User must provide in root .env
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Optional - For custom OpenAI endpoints (e.g. Cloudflare proxy)
+      - OPENAI_API_BASE=${OPENAI_API_BASE}
       # Container-specific paths and config
       - INTERPRETER_TYPE=r
       - R_PATH=/usr/bin/R
