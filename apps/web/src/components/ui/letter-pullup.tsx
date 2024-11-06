@@ -18,7 +18,7 @@ export default function LetterPullup({
 
   const pullupVariant = {
     initial: { y: 20, opacity: 0 },  // smaller y offset for subtlety
-    animate: (i: any) => ({
+    animate: (i: number) => ({
       y: 0,
       opacity: 1,
       transition: {
