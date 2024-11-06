@@ -18,6 +18,8 @@ This guide covers deploying R-Pilot for personal use or sharing with friends usi
 2. Create a `.env` file in the root directory with your OpenAI API key:
    ```bash
    OPENAI_API_KEY=your_openai_api_key_here
+   # Optional - For Cloudflare rate limiting proxy via AI Gateway
+   # OPENAI_API_BASE=your_cloudflare_worker_url_here
    ```
 
 3. Build and start the containers:
@@ -151,6 +153,9 @@ Your R-Pilot instance will now be available at:
 ### Required Variables (.env)
 - `OPENAI_API_KEY`: Your OpenAI API key (get one at https://platform.openai.com/api-keys)
 
+### Optional Variables (.env)
+- `OPENAI_API_BASE`: Cloudflare rate limiting proxy URL via AI Gateway (if using Cloudflare rate limiting)
+
 ### Container Configuration
 The Docker containers are pre-configured with appropriate paths and settings:
 - R is installed at `/usr/bin/R`
@@ -190,6 +195,7 @@ The Docker containers are pre-configured with appropriate paths and settings:
 
 2. **OpenAI API Issues**
    - Verify your API key is correct in the root .env file
+   - If using Cloudflare rate limiting, check your OPENAI_API_BASE URL
    - Check backend logs for any API errors
    - Make sure containers have internet access
    - The backend container uses Google DNS (8.8.8.8) for reliable external access
@@ -241,6 +247,7 @@ docker compose up --build -d
 If using Cloudflare Tunnel, restart it after updating:
 ```bash
 cloudflared tunnel run rpilot
+```
 
 ## Important Note About Domain Deployment
 

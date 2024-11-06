@@ -1,6 +1,5 @@
 from typing import Generator
 
-import openai
 from openai import OpenAIError
 
 from services.llm.base import BaseLLM, LLMException
@@ -17,7 +16,7 @@ class GPT(BaseLLM):
         messages = [msg_to_gpt_msg(msg) for msg in history]
 
         try:
-            chunk_generator = openai.ChatCompletion.create(
+            stream = self.client.chat.completions.create(
                 **self._model_selection,
                 messages=messages,
                 temperature=0,
@@ -28,12 +27,21 @@ class GPT(BaseLLM):
 
             response = {}
             previous_code = None
-            for chunk_all in chunk_generator:
-                if len(chunk_all["choices"]) > 0:
-                    chunk = chunk_all["choices"][0]["delta"]
-                else:
-                    chunk = {}
-                fill_dict(response, chunk)
+            for chunk in stream:
+                delta = chunk.choices[0].delta
+                chunk_dict = {}
+                
+                if hasattr(delta, "content") and delta.content is not None:
+                    chunk_dict["content"] = delta.content
+                if hasattr(delta, "function_call"):
+                    if not "function_call" in response:
+                        response["function_call"] = {}
+                    if hasattr(delta.function_call, "arguments"):
+                        chunk_dict["function_call"] = {
+                            "arguments": delta.function_call.arguments
+                        }
+
+                fill_dict(response, chunk_dict)
 
                 text = None
                 if "content" in response:

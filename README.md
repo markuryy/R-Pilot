@@ -73,6 +73,8 @@ If the setup script fails, follow these steps:
    Create `apps/api/services/.env`:
    ```bash
    OPENAI_API_KEY=your_api_key_here
+   # Optional - For Cloudflare rate limiting proxy via AI Gateway
+   # OPENAI_API_BASE=your_cloudflare_worker_url_here
    INTERPRETER_TYPE=r
    R_PATH=/path/to/R  # Get this using 'which R' on Unix or 'where R' on Windows
    WORKING_DIRECTORY=/path/to/workspace
