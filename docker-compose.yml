@@ -15,12 +15,12 @@ services:
       - R_PATH=/usr/bin/R
       - WORKING_DIRECTORY=/workspace
       # List hosts without protocols since they're stripped in websocket verification
-      # For production: add your domains
+      # For production: add your domains in .env
       # Example: ALLOWED_HOSTS=localhost:3000 rpilot.example.com rpilot-api.example.com
-      - ALLOWED_HOSTS=localhost:3000
-      # For production: replace with your frontend domain
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost:3000}
+      # For production: set in .env
       # Example: FRONTEND_URL=rpilot.example.com
-      - FRONTEND_URL=localhost:3000
+      - FRONTEND_URL=${FRONTEND_URL:-localhost:3000}
       - ENABLE_CORS=TRUE
       - INTERPRETER_TIMEOUT=120
       # LLM configuration
@@ -40,15 +40,11 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        # For production: replace with your API domain
+        # For production: set in .env
         # Example: NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.example.com
-        - NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
+        - NEXT_PUBLIC_SERVICES_URL=${NEXT_PUBLIC_SERVICES_URL:-http://localhost:8000}
     ports:
       - "3000:3000"
-    environment:
-      # For production: replace with your API domain
-      # Example: NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.example.com
-      - NEXT_PUBLIC_SERVICES_URL=http://localhost:8000
     volumes:
       - workspace:/workspace
     depends_on:
