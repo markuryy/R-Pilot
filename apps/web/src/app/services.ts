@@ -1,26 +1,5 @@
 function getServicesUrl() {
-  // Check if we're in a browser context
-  const isBrowser = typeof window !== 'undefined';
-  
-  // Get configured services URL from env
-  let url = process.env.NEXT_PUBLIC_SERVICES_URL ?? "";
-  
-  if (url === "") {
-    if (isBrowser) {
-      // In browser, use relative URL to current host if no explicit URL set
-      // This helps with Docker deployments where the hostname might change
-      const protocol = window.location.protocol;
-      const hostname = window.location.hostname;
-      // Use port 8000 only in development (localhost)
-      const port = hostname === 'localhost' ? ':8000' : '';
-      url = `${protocol}//${hostname}${port}`;
-    } else {
-      // In SSR context, fallback to localhost
-      url = "http://localhost:8000";
-    }
-  }
-  
-  return url.replace(/\/$/, ''); // Remove trailing slash if present
+  return (process.env.NEXT_PUBLIC_SERVICES_URL ?? "http://localhost:8000").replace(/\/$/, '');
 }
 
 export const SERVICES_URL = getServicesUrl();
