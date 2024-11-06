@@ -26,4 +26,4 @@ RUN bun run build
 EXPOSE 3000
 
 # Command to run the application
-CMD ["bun", "run", "start"]
+CMD ["bun", ".next/standalone/server.js"]
