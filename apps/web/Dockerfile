@@ -22,15 +22,8 @@ ENV NEXT_DISABLE_ESLINT=true
 # Build the application
 RUN bun run build
 
-# Copy standalone directory and static files
-RUN cp -r .next/static .next/standalone/.next/static && \
-    cp -r public .next/standalone/public
-
-# Set the working directory to the standalone directory
-WORKDIR /app/apps/web/.next/standalone
-
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Command to run the application
-CMD ["bun", "server.js"]
+CMD ["bun", "run", "start"]
