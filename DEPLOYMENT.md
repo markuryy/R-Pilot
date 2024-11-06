@@ -64,12 +64,7 @@ Pre-installed R Packages:
 - ggplot2: Data visualization
 - dplyr: Data manipulation
 - readr: Data import
-- tibble: Modern data frames
-- stringr: String manipulation
 - lubridate: Date/time handling
-- forcats: Factor manipulation
-- purrr: Functional programming
-- tidyr: Data tidying
 
 Additional Features:
 - R and R-dev packages are pre-installed

@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-install common R packages
-RUN R -e "install.packages(c('tidyverse', 'ggplot2', 'dplyr', 'readr', 'tibble', 'stringr', 'lubridate', 'forcats', 'purrr', 'tidyr'), repos='https://cloud.r-project.org/')"
+RUN R -e "install.packages(c('tidyverse', 'ggplot2', 'dplyr', 'readr', 'lubridate'), repos='https://cloud.r-project.org/')"
 
 # Create R package directory with write permissions
 RUN mkdir -p /usr/local/lib/R/site-library && \
