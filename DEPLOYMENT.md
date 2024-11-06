@@ -5,6 +5,7 @@ This guide covers deploying R-Pilot for personal use or sharing with friends usi
 ## Prerequisites
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+- OpenAI API key (get one at https://platform.openai.com/api-keys)
 
 ## Simple Deployment Steps
 
@@ -14,13 +15,11 @@ This guide covers deploying R-Pilot for personal use or sharing with friends usi
    cd R-Pilot
    ```
 
-2. Create a `.env` file in the root directory with your configuration:
+2. Create a `.env` file in the root directory with your OpenAI API key:
    ```bash
-   # Required
    OPENAI_API_KEY=your_openai_api_key_here
-   
-   # Optional - Set a specific auth token (recommended for sharing)
-   AUTH_TOKEN=your_chosen_token_here  # e.g., AUTH_TOKEN=mysecrettoken123
+   # Optional - For Cloudflare rate limiting proxy via AI Gateway
+   # OPENAI_API_BASE=your_cloudflare_worker_url_here
    ```
 
 3. Build and start the containers:
@@ -28,7 +27,52 @@ This guide covers deploying R-Pilot for personal use or sharing with friends usi
    docker compose up --build
    ```
 
-4. Access the application at http://localhost:3000 (or with your token: http://localhost:3000?token=your_chosen_token_here)
+4. Check the backend logs for the authentication link:
+   ```bash
+   docker compose logs backend
+   ```
+
+5. Access the application using the authentication link shown in the logs.
+   - The link includes a token that's valid for your session
+   - You can share this link with others to give them access
+   - The token persists in browsers for future sessions
+
+## Container Architecture
+
+R-Pilot uses a two-container setup:
+
+1. Backend Container (Python/FastAPI)
+   - Handles API requests and websocket connections
+   - Runs R interpreter with pre-installed packages
+   - Communicates with OpenAI API
+   - Available at http://localhost:8000
+
+2. Frontend Container (Next.js)
+   - Serves the web interface
+   - Communicates with backend via HTTP and WebSocket
+   - Available at http://localhost:3000
+
+The containers are connected through:
+- A shared Docker network for container-to-container communication
+- Port mapping to make services available on localhost
+- Environment variables configured for proper networking
+
+## R Environment in Docker
+
+The backend container includes a fully functional R environment:
+
+Pre-installed R Packages:
+- tidyverse: Collection of data science packages
+- ggplot2: Data visualization
+- dplyr: Data manipulation
+- readr: Data import
+- lubridate: Date/time handling
+
+Additional Features:
+- R and R-dev packages are pre-installed
+- Package installation directory is properly configured
+- Write permissions are set up for package operations
+- Workspace directory is available for file operations
 
 ## Deploying with Cloudflare Tunnel (Recommended for Sharing)
 
@@ -82,7 +126,8 @@ This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.y
    ```yaml
    backend:
      environment:
-       - ALLOWED_HOSTS=rpilot.yourdomain.com,rpilot-api.yourdomain.com,localhost:3000
+       - ALLOWED_HOSTS=rpilot.yourdomain.com rpilot-api.yourdomain.com localhost:3000
+       - FRONTEND_URL=rpilot.yourdomain.com
    
    frontend:
      environment:
@@ -101,21 +146,22 @@ This method lets you securely expose R-Pilot through a subdomain (e.g., rpilot.y
 
 Your R-Pilot instance will now be available at:
 - Frontend: https://rpilot.yourdomain.com
-- With auth token: https://rpilot.yourdomain.com?token=your_chosen_token_here
+- With auth token: Check backend logs with `docker compose logs backend`
 
 ## Environment Variables
 
-### Core Variables (.env)
-- `OPENAI_API_KEY`: Your OpenAI API key (required)
-- `AUTH_TOKEN`: Set a specific authentication token (optional, recommended for sharing)
+### Required Variables (.env)
+- `OPENAI_API_KEY`: Your OpenAI API key (get one at https://platform.openai.com/api-keys)
 
-### Advanced Configuration
-You can customize these in docker-compose.yml if needed:
-- `INTERPRETER_TYPE`: Set to "r" for R programming
-- `R_PATH`: Path to R executable (default: /usr/bin/R)
-- `WORKING_DIRECTORY`: Directory for file operations (default: /workspace)
-- `ALLOWED_HOSTS`: Comma-separated list of allowed frontend hosts
-- `ENABLE_CORS`: Enable CORS (default: TRUE)
+### Optional Variables (.env)
+- `OPENAI_API_BASE`: Cloudflare rate limiting proxy URL via AI Gateway (if using Cloudflare rate limiting)
+
+### Container Configuration
+The Docker containers are pre-configured with appropriate paths and settings:
+- R is installed at `/usr/bin/R`
+- Common R packages are pre-installed
+- Working directory is set to `/workspace`
+- All necessary environment variables are set in docker-compose.yml
 
 ## Basic Docker Commands
 
@@ -141,21 +187,37 @@ You can customize these in docker-compose.yml if needed:
 
 ## Troubleshooting
 
-1. **Can't Access the Application**
-   - Check if containers are running: `docker compose ps`
-   - Verify ports 3000 and 8000 aren't in use
-   - If using Cloudflare Tunnel, check tunnel status: `cloudflared tunnel info rpilot`
+1. **Authentication Issues**
+   - Check backend logs with `docker compose logs backend` for the correct authentication link
+   - Make sure to use http:// in development, https:// with Cloudflare
+   - The token persists in browsers for future sessions
+   - Sharing the auth link with others will work as long as they use the same token
 
-2. **Authentication Issues**
-   - If you set a custom AUTH_TOKEN, make sure to include it in the URL
-   - Check the backend logs for authentication errors
-   - Verify ALLOWED_HOSTS includes your domain/subdomain
+2. **OpenAI API Issues**
+   - Verify your API key is correct in the root .env file
+   - If using Cloudflare rate limiting, check your OPENAI_API_BASE URL
+   - Check backend logs for any API errors
+   - Make sure containers have internet access
+   - The backend container uses Google DNS (8.8.8.8) for reliable external access
 
-3. **R or Python Issues**
-   - Check container logs: `docker compose logs backend`
-   - Verify R is working: `docker compose exec backend R --version`
+3. **R Package Issues**
+   - Common data science packages are pre-installed
+   - Package installation during runtime may require compilation
+   - Check backend logs for package-related messages
+   - The container has necessary build tools installed
 
-4. **Cloudflare Tunnel Issues**
+4. **WebSocket Connection Issues**
+   - WebSocket URLs are automatically derived from the NEXT_PUBLIC_SERVICES_URL
+   - In development, they use ws:// for http:// and wss:// for https://
+   - Check browser console for connection errors
+   - Verify ALLOWED_HOSTS includes the correct domains
+
+5. **Container Networking**
+   - Frontend container accesses backend via localhost:8000
+   - Backend container is accessible as 'backend:8000' within the network
+   - File and image serving works through the mapped ports
+
+6. **Cloudflare Tunnel Issues**
    - Check tunnel logs: `cloudflared tunnel run --loglevel debug rpilot`
    - Verify DNS records in Cloudflare dashboard
    - Ensure cloudflared is up to date
@@ -166,7 +228,6 @@ You can customize these in docker-compose.yml if needed:
 
 1. If exposing to the internet:
    - Use Cloudflare Tunnel for secure access (recommended)
-   - Set a strong AUTH_TOKEN
    - Keep your OpenAI API key secure
    - Regularly update Docker images
 
@@ -186,3 +247,27 @@ docker compose up --build -d
 If using Cloudflare Tunnel, restart it after updating:
 ```bash
 cloudflared tunnel run rpilot
+```
+
+## Important Note About Domain Deployment
+
+When deploying with a domain (step 5 in Cloudflare Tunnel setup), make sure to update docker-compose.yml correctly:
+
+```yaml
+frontend:
+  build:
+    args:
+      # Required at build time for Next.js static optimization
+      - NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.yourdomain.com
+  environment:
+    # Must match the build arg
+    - NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.yourdomain.com
+```
+
+The frontend's NEXT_PUBLIC_SERVICES_URL must:
+
+- Be set as both a build arg and environment variable
+- Point to the API domain (rpilot-api.yourdomain.com), not the frontend domain
+- Include the protocol (https://)
+
+This ensures proper authentication and API communication in production.

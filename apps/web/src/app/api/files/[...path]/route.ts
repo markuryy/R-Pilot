@@ -5,7 +5,10 @@ import { existsSync } from 'fs';
 
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
-    const rootDir = path.join(process.cwd(), '..', '..');
+    // In Docker, files are in /workspace
+    // Otherwise, look in ../../workspace relative to cwd
+    const isDocker = existsSync('/workspace');
+    const rootDir = isDocker ? '/' : path.join(process.cwd(), '..', '..');
     const filePath = path.join(rootDir, 'workspace', ...params.path);
 
     if (!existsSync(filePath)) {
@@ -35,7 +38,8 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
         'Cache-Control': 'no-cache',
       },
     });
-  } catch {
+  } catch (error) {
+    console.error('Error serving file:', error);
     return new Response('Error serving file', { status: 500 });
   }
 }

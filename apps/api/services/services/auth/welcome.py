@@ -14,8 +14,11 @@ async def welcome_lifespan(app: FastAPI):
     
     print("To start, open the following URL:")
     
+    # Use http in development, https if specified in env
+    protocol = "https" if os.environ.get('USE_HTTPS', '').lower() == 'true' else "http"
+    
     # Generate URL with the frontend domain from environment variable
-    print(f"  https://{frontend_url}?token={AUTH_TOKEN}")
+    print(f"  {protocol}://{frontend_url}?token={AUTH_TOKEN}")
     
     print("***")
     yield

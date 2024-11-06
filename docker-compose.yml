@@ -8,30 +8,55 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # Required - User must provide in root .env
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Container-specific paths and config
       - INTERPRETER_TYPE=r
       - R_PATH=/usr/bin/R
       - WORKING_DIRECTORY=/workspace
-      - ALLOWED_HOSTS=localhost:3000
-      - FRONTEND_URL=localhost:3000
+      # List hosts without protocols since they're stripped in websocket verification
+      # For production: add your domains in .env
+      # Example: ALLOWED_HOSTS=localhost:3000 rpilot.example.com rpilot-api.example.com
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost:3000}
+      # For production: set in .env
+      # Example: FRONTEND_URL=rpilot.example.com
+      - FRONTEND_URL=${FRONTEND_URL:-localhost:3000}
       - ENABLE_CORS=TRUE
+      - INTERPRETER_TIMEOUT=120
+      # LLM configuration
+      - LLM=gpt-openai:gpt-4o
     volumes:
       - workspace:/workspace
     stdin_open: true
     tty: true
+    networks:
+      - rpilot-net
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   frontend:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # For production: set in .env
+        # Example: NEXT_PUBLIC_SERVICES_URL=https://rpilot-api.example.com
+        - NEXT_PUBLIC_SERVICES_URL=${NEXT_PUBLIC_SERVICES_URL:-http://localhost:8000}
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_SERVICES_URL=http://backend:8000
+    volumes:
+      - workspace:/workspace
     depends_on:
       - backend
     stdin_open: true
     tty: true
+    networks:
+      - rpilot-net
 
 volumes:
   workspace:
+
+networks:
+  rpilot-net:
+    driver: bridge

@@ -12,6 +12,10 @@ RUN bun install
 # Set working directory to web app
 WORKDIR /app/apps/web
 
+# Create .env.local with the services URL
+ARG NEXT_PUBLIC_SERVICES_URL
+RUN echo "NEXT_PUBLIC_SERVICES_URL=$NEXT_PUBLIC_SERVICES_URL" > .env.local
+
 # Disable lint during build
 ENV NEXT_DISABLE_ESLINT=true
 
