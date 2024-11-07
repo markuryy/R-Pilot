@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import { mkdir } from 'fs/promises';
+import { existsSync } from 'fs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,8 +12,10 @@ export async function POST(request: NextRequest) {
       return new Response('No file uploaded', { status: 400 });
     }
 
-    // Go up to root directory and use workspace folder
-    const rootDir = path.join(process.cwd(), '..', '..');
+    // In Docker, files go in /workspace
+    // Otherwise, look in ../../workspace relative to cwd
+    const isDocker = existsSync('/workspace');
+    const rootDir = isDocker ? '/' : path.join(process.cwd(), '..', '..');
     const workspacePath = path.join(rootDir, 'workspace');
 
     // Ensure workspace directory exists
