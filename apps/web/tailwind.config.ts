@@ -86,11 +86,26 @@ const config = {
   				to: {
   					height: '0'
   				}
+  			},
+  			gradient: {
+  				to: {
+  					backgroundPosition: 'var(--bg-size) 0'
+  				}
+  			},
+  			'shiny-text': {
+  				'0%, 85%, 100%': {
+  					'background-position': 'calc(-100% - var(--shiny-width)) 0'
+  				},
+  				'35%, 50%': {
+  					'background-position': 'calc(100% + var(--shiny-width)) 0'
+  				}
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			gradient: 'gradient 8s linear infinite',
+  			'shiny-text': 'shiny-text 6s cubic-bezier(0.4, 0, 0.2, 1) infinite'
   		}
   	}
   },
