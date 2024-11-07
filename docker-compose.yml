@@ -28,7 +28,7 @@ services:
       # LLM configuration
       - LLM=gpt-openai:gpt-4o
     volumes:
-      - workspace:/workspace
+      - ./workspace:/workspace
     stdin_open: true
     tty: true
     networks:
@@ -48,16 +48,13 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - workspace:/workspace
+      - ./workspace:/workspace
     depends_on:
       - backend
     stdin_open: true
     tty: true
     networks:
       - rpilot-net
-
-volumes:
-  workspace:
 
 networks:
   rpilot-net:
