@@ -5,7 +5,7 @@ from openai import OpenAIError
 from services.llm.base import BaseLLM, LLMException
 from services.llm.types import Message, Response
 from .parsing import msg_to_gpt_msg, lazy_parse_args, fill_dict
-from .prompt import FUNCTIONS
+from .prompt import FUNCTIONS, get_system_message
 
 
 class GPT(BaseLLM):
@@ -13,7 +13,9 @@ class GPT(BaseLLM):
         self._model_selection = model_selection
 
     def chat(self, history: list[Message]) -> Generator[Response, None, None]:
-        messages = [msg_to_gpt_msg(msg) for msg in history]
+        # Convert messages and prepend system message
+        messages = [get_system_message()]
+        messages.extend([msg_to_gpt_msg(msg) for msg in history])
 
         try:
             stream = self.client.chat.completions.create(
